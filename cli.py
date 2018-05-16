@@ -14,6 +14,13 @@ def print_error(message):
     click.echo(click.style(message, fg='red'), err=True)
 
 
+def print_table(rows, columns=None):
+    """Print a table to the console."""
+    if not columns is None:
+        rows = map(lambda r: { k: r[k] for k in columns if k in r }, rows)
+    click.echo(tabulate.tabulate(rows, headers='keys', tablefmt="grid"))
+
+
 @click.group()
 def cli():
     pass
@@ -24,6 +31,7 @@ def cli():
 @click.option('--username', prompt='Username')
 @click.option('--password', prompt='Password', hide_input=True)
 def configure(kimai_url, username, password):
+    """Configure the Kimai-CLI"""
     config.set('KimaiUrl', kimai_url)
 
     r = kimai.authenticate(username, password)
@@ -50,8 +58,8 @@ def projects(ctx):
 
 @projects.command('list')
 def list_projects():
-    projects = kimai.get_projects()
-    click.echo(tabulate.tabulate(projects, headers='keys'))
+    """Lists all available projects"""
+    print_table(kimai.get_projects(), columns=['projectID', 'name', 'customerName'])
 
 
 @cli.group()
@@ -67,8 +75,8 @@ def tasks(ctx):
 
 @tasks.command('list')
 def list_tasks():
-    tasks = kimai.get_tasks()
-    click.echo(tabulate.tabulate(tasks, headers='keys'))
+    """Lists all available tasks"""
+    print_table(kimai.get_tasks())
 
 
 @cli.group()
@@ -82,10 +90,10 @@ def record(ctx):
         ctx.abort()
 
 
-@record.command()
+@record.command('start')
 @click.option('--task-id', prompt='Task Id', type=int)
 @click.option('--project-id', prompt='Project Id', type=int)
-def start(task_id, project_id):
+def start_record(task_id, project_id):
     """Start a new time recording"""
     response = kimai.start_recording(task_id, project_id)
 
@@ -95,9 +103,9 @@ def start(task_id, project_id):
         print_error('Could not start recording: "%s"' % response.error)
 
 
-@record.command()
-def stop():
-    """Stops the currently running recording"""
+@record.command('stop')
+def stop_record():
+    """Stops the currently running recording (if there is one)"""
     response = kimai.stop_recording()
 
     if response.successful:
@@ -109,4 +117,69 @@ def stop():
 @record.command('get-current')
 def get_current():
     """Get the currently running time recording."""
-    click.echo(tabulate.tabulate([kimai.get_current()], headers='keys'))
+    current = kimai.get_current()
+
+    if not current:
+        return
+
+    print_table(
+        [current],
+        columns=['timeEntryID', 'start', 'end', 'customerName', 'projectName', 'activityName']
+    )
+
+
+@cli.group()
+@click.pass_context
+def favorites(ctx):
+    if config.get('ApiKey') is None:
+        print_error(
+            '''kimai-cli has not yet been configured. Use \'kimai configure\'
+            first before using any other command'''
+        )
+        ctx.abort()
+
+
+@favorites.command('list')
+def list_favorites():
+    """List all favorites"""
+    print_table(config.get('Favorites', default=[]))
+
+
+@favorites.command('add')
+@click.option('--project-id', prompt='Project Id', type=int)
+@click.option('--task-id', prompt='Task Id', type=int)
+@click.option('--name', prompt='Favorite name', type=str)
+def add_favorite(project_id, task_id, name):
+    """Adds a favorite."""
+    current_favorites = config.get('Favorites', default=[])
+
+    if any(f for f in current_favorites if f['Name'] == name):
+        print_error('Favorite with name "%s" already exists' % name)
+        return
+
+    current_favorites.append({ 'Name': name, 'Project': project_id, 'Task': task_id })
+    config.set('Favorites', current_favorites)
+    print_success('Successfully added favorite "%s"' % name)
+
+
+@favorites.command('delete')
+@click.option('--name', prompt='Favorite name', type=str)
+def delete_favorite(name):
+    """Deletes a favorite"""
+    current_favorites = config.get('Favorites', default=[])
+    config.set('Favorites', [f for f in current_favorites if f['Name'] != name])
+    print_success('Successfully removed favorite "%s"' % name)
+
+
+@favorites.command('start')
+@click.option('--name', prompt='Favorite name', type=str)
+@click.pass_context
+def start_recording_favorite(ctx, name):
+    favorites = config.get('Favorites', default=[])
+
+    if not [f for f in favorites if f['Name'] == name]:
+        print_error('No favorite exists for name "%s"' % name)
+        return
+
+    favorite = favorites[0]
+    ctx.invoke(start_record, task_id=favorite['Task'], project_id=favorite['Project'])
