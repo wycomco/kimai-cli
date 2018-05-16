@@ -1,83 +1,103 @@
-import click
 import requests
 import json
-import yaml
-import os
-import errno
-import tabulate
+import config
 
 
-KIMAI_URL = 'https://kimai.wycomco.de'
-CONFIG_FOLDER = os.path.expanduser('~/.kimai')
-CONFIG_PATH = os.path.join(CONFIG_FOLDER, 'config')
+def _build_payload(method, *args):
+    quoted_args = ['\"%s\"' % arg for arg in args]
+    return '{"jsonrpc":"2.0", "method":"%s", "params":[%s], "id":"1"}' % (method, ','.join(quoted_args))
 
 
-@click.group()
-@click.pass_context
-def cli(ctx):
-    try:
-        os.makedirs(CONFIG_FOLDER)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
+def _do_request(payload):
+    kimai_url = config.get('KimaiUrl')
+    return requests.post('{}/core/json.php'.format(kimai_url), data=payload)
 
-    try:
-        with open(CONFIG_PATH, 'r') as f:
-            config = yaml.load(f)
-    except OSError as e:
-        config = {}
 
-    ctx.obj = config
+def authenticate(username, password):
+    """Authenticate a user against the kimai backend."""
+    payload = _build_payload('authenticate', username, password)
+    response = _do_request(payload)
+    return KimaiAuthResponse(response)
 
-@cli.command()
-@click.argument('username')
-@click.option('--password', prompt='Password', hide_input=True)
-@click.pass_context
-def auth(ctx, username, password):
-    """Authenticate against the Kimai backend to retrieve an api key. This method only
-    needs to be called once.
-    """
 
-    payload = '{"jsonrpc":"2.0", "method":"authenticate", "params":["%s","%s"], "id":"1"}' % (username, password)
-    r = KimaiAuthResponse(requests.post('{}/core/json.php'.format(KIMAI_URL), data=payload))
+def get_projects():
+    """Return a list of all available projects."""
+    payload = _build_payload('getProjects', config.get('ApiKey'))
+    response = KimaiResponse(_do_request(payload))
+    return response.items
 
-    if not r.success:
-        click.echo(click.style('Could not authenticate against Kimai backend.', fg='red'), err=True)
+
+def get_tasks():
+    """Return a list of all available tasks."""
+    payload = _build_payload('getTasks', config.get('ApiKey'))
+    response = KimaiResponse(_do_request(payload))
+    return response.items
+
+
+def start_recording(task_id, project_id):
+    """Starts a new recording for the provided task and project."""
+    payload = _build_payload('startRecord', config.get('ApiKey'), project_id, task_id)
+    return KimaiResponse(_do_request(payload))
+
+
+def stop_recording():
+    current_record = get_current()
+
+    if current_record is None:
         return
 
-    with open(CONFIG_PATH, 'w') as outfile:
-        yaml.dump({'ApiKey': r.apiKey}, outfile, default_flow_style=False)
-
-    click.echo(click.style('Successfully authenticated.', fg='green'))
+    payload = _build_payload('stopRecord', config.get('ApiKey'), current_record['timeEntryID'])
+    return KimaiResponse(_do_request(payload))
 
 
-@cli.group()
-@click.pass_context
-def projects(ctx):
-    if 'ApiKey' not in ctx.obj:
-        click.echo(click.style('Not yet authenticated. Use \'kimai auth\' first before using any other command', fg='red'), err=True)
-        ctx.abort()
+def get_current():
+    """Returns the currently running record if there is any."""
+    timesheet = get_timesheet()
+
+    if not timesheet:
+        return
+
+    if timesheet[0]['end'] != '0':
+        return
+
+    return timesheet[0]
 
 
-@projects.command()
-@click.pass_obj
-def list(config):
-    payload = '{"jsonrpc":"2.0", "method":"getProjects", "params":["%s"], "id":"1234"}' % (config['ApiKey'])
-    r = requests.post('{}/core/json.php'.format(KIMAI_URL), data=payload)
-    projects = json.loads(r.text)['result']['items']
-    click.echo(tabulate.tabulate(projects, headers='keys'))
+def get_timesheet():
+    payload = _build_payload('getTimesheet', config.get('ApiKey'))
+    response = KimaiResponse(_do_request(payload))
+    return response.items
 
 
-class KimaiAuthResponse(object):
+
+class KimaiResponse(object):
+    """Generic response object for the Kimai (sort of) JSON API"""
+
     def __init__(self, response):
         self.data = json.loads(response.text)['result']
 
     @property
-    def success(self):
+    def successful(self):
         return self.data['success']
 
     @property
+    def error(self):
+        if self.successful:
+            return None
+        return self.data['error']['msg']
+
+    @property
+    def items(self):
+        if not self.successful:
+            return None
+        return self.data['items']
+
+
+class KimaiAuthResponse(KimaiResponse):
+    """Specific response for the result of an authentication request"""
+
+    @property
     def apiKey(self):
-        if not self.success:
-            raise RuntimeError('Invalid credentials')
-        return self.data['items'][0]['apiKey']
+        if not self.successful:
+            return None
+        return self.items[0]['apiKey']

@@ -1,0 +1,725 @@
+{
+    "transport": "POST",
+    "envelope": "JSON-RPC-2.0",
+    "contentType": "application/json",
+    "SMDVersion": "2.0",
+    "target": "http://kimai.wycomco.de/core/json.php",
+    "services": {
+        "authenticate": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "username",
+                    "optional": false
+                },
+                {
+                    "type": "string",
+                    "name": "password",
+                    "optional": false
+                }
+            ],
+            "returns": "string"
+        },
+        "startRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "projectId",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "activityId",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "stopRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "entryId",
+                    "optional": false
+                }
+            ],
+            "returns": "boolean"
+        },
+        "getUsers": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                }
+            ],
+            "returns": [
+                "array",
+                "boolean"
+            ]
+        },
+        "getCustomers": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                }
+            ],
+            "returns": [
+                "array",
+                "boolean"
+            ]
+        },
+        "getProjects": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                }
+            ],
+            "returns": [
+                "array",
+                "boolean"
+            ]
+        },
+        "getTasks": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": [
+                        "integer",
+                        "array"
+                    ],
+                    "name": "projectId",
+                    "optional": true
+                }
+            ],
+            "returns": [
+                "array",
+                "array",
+                "array",
+                "boolean",
+                "boolean",
+                "boolean"
+            ]
+        },
+        "getActiveRecording": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "getTimesheet": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "string",
+                    "name": "from",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "string",
+                    "name": "to",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "integer",
+                    "name": "cleared",
+                    "optional": true,
+                    "default": -1
+                },
+                {
+                    "type": "integer",
+                    "name": "start",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "integer",
+                    "name": "limit",
+                    "optional": true,
+                    "default": 0
+                }
+            ],
+            "returns": [
+                "array",
+                "array",
+                "array",
+                "array",
+                "array",
+                "array"
+            ]
+        },
+        "getTimesheetRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "id",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "setTimesheetRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "array",
+                    "name": "record",
+                    "optional": false
+                },
+                {
+                    "type": "boolean",
+                    "name": "doUpdate",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "removeTimesheetRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "id",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "getExpenses": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "string",
+                    "name": "from",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "string",
+                    "name": "to",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "integer",
+                    "name": "refundable",
+                    "optional": true,
+                    "default": -1
+                },
+                {
+                    "type": "integer",
+                    "name": "cleared",
+                    "optional": true,
+                    "default": -1
+                },
+                {
+                    "type": "integer",
+                    "name": "start",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "integer",
+                    "name": "limit",
+                    "optional": true,
+                    "default": 0
+                }
+            ],
+            "returns": [
+                "array",
+                "array",
+                "array",
+                "array",
+                "array",
+                "array",
+                "array"
+            ]
+        },
+        "getExpenseRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "id",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "setExpenseRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "array",
+                    "name": "record",
+                    "optional": false
+                },
+                {
+                    "type": "boolean",
+                    "name": "doUpdate",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "removeExpenseRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "id",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        }
+    },
+    "methods": {
+        "authenticate": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "username",
+                    "optional": false
+                },
+                {
+                    "type": "string",
+                    "name": "password",
+                    "optional": false
+                }
+            ],
+            "returns": "string"
+        },
+        "startRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "projectId",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "activityId",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "stopRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "entryId",
+                    "optional": false
+                }
+            ],
+            "returns": "boolean"
+        },
+        "getUsers": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                }
+            ],
+            "returns": [
+                "array",
+                "boolean"
+            ]
+        },
+        "getCustomers": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                }
+            ],
+            "returns": [
+                "array",
+                "boolean"
+            ]
+        },
+        "getProjects": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                }
+            ],
+            "returns": [
+                "array",
+                "boolean"
+            ]
+        },
+        "getTasks": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": [
+                        "integer",
+                        "array"
+                    ],
+                    "name": "projectId",
+                    "optional": true
+                }
+            ],
+            "returns": [
+                "array",
+                "array",
+                "array",
+                "boolean",
+                "boolean",
+                "boolean"
+            ]
+        },
+        "getActiveRecording": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "getTimesheet": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "string",
+                    "name": "from",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "string",
+                    "name": "to",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "integer",
+                    "name": "cleared",
+                    "optional": true,
+                    "default": -1
+                },
+                {
+                    "type": "integer",
+                    "name": "start",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "integer",
+                    "name": "limit",
+                    "optional": true,
+                    "default": 0
+                }
+            ],
+            "returns": [
+                "array",
+                "array",
+                "array",
+                "array",
+                "array",
+                "array"
+            ]
+        },
+        "getTimesheetRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "id",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "setTimesheetRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "array",
+                    "name": "record",
+                    "optional": false
+                },
+                {
+                    "type": "boolean",
+                    "name": "doUpdate",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "removeTimesheetRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "id",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "getExpenses": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "string",
+                    "name": "from",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "string",
+                    "name": "to",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "integer",
+                    "name": "refundable",
+                    "optional": true,
+                    "default": -1
+                },
+                {
+                    "type": "integer",
+                    "name": "cleared",
+                    "optional": true,
+                    "default": -1
+                },
+                {
+                    "type": "integer",
+                    "name": "start",
+                    "optional": true,
+                    "default": 0
+                },
+                {
+                    "type": "integer",
+                    "name": "limit",
+                    "optional": true,
+                    "default": 0
+                }
+            ],
+            "returns": [
+                "array",
+                "array",
+                "array",
+                "array",
+                "array",
+                "array",
+                "array"
+            ]
+        },
+        "getExpenseRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "id",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "setExpenseRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "array",
+                    "name": "record",
+                    "optional": false
+                },
+                {
+                    "type": "boolean",
+                    "name": "doUpdate",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        },
+        "removeExpenseRecord": {
+            "envelope": "JSON-RPC-2.0",
+            "transport": "POST",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "apiKey",
+                    "optional": false
+                },
+                {
+                    "type": "integer",
+                    "name": "id",
+                    "optional": false
+                }
+            ],
+            "returns": "array"
+        }
+    }
+}
