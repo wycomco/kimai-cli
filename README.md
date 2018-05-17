@@ -2,6 +2,8 @@
 
 :fire: A command line interface for the Kimai time tracking software.
 
+[![asciicast](https://asciinema.org/a/1wDzOF9W773vA2YbsTYwC7XCF.png)](https://asciinema.org/a/1wDzOF9W773vA2YbsTYwC7XCF)
+
 ## Installation
 
 You can install `kimai-cli` through Homebrew.
