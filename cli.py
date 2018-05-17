@@ -31,11 +31,10 @@ def prompt_with_autocomplete(prompt_title, collection_name, resolve_title=True):
     cached_collection = config.get(collection_name, {})
 
     if not cached_collection:
-        click.echo('''No {} downloaded. Falling back to ids. If you 
-        want to have autocompletion for cached_collection, please run 
-        "kimai cached_collection download" first.''')
+        click.echo('Falling back to ids. If you want to have fuzzy '
+                   'autocompletion , please run "kimai configure" first.')
 
-        return prompt('{} Id:'.format(prompt_title))
+        return prompt(prompt_title)
 
     title = None
 
