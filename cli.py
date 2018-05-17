@@ -330,9 +330,12 @@ def delete_favorite(name):
 
 
 @favorites.command('start')
-@click.option('--name', prompt='Favorite name', type=str)
+@click.option('--name', type=str)
 @click.pass_context
 def start_recording_favorite(ctx, name):
+    if not name:
+        name = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
+
     try:
         favorite = fav.get_favorite(name)
     except RuntimeError as e:
