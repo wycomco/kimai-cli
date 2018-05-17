@@ -1,5 +1,9 @@
 # Kimai Command Line Interface (CLI)
 
+## Requirements
+
+Python 3.5+
+
 ## Installation
 
 ```bash
