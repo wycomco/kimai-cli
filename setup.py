@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='kimai-cli',
-    version='0.3.2',
+    version='0.4.0',
     author='Kai Sassnowski',
     author_email='me@kai-sassnowski.com',
     scripts=['bin/kimai-complete.sh'],
