@@ -1,6 +1,10 @@
 clean:
 	rm -rf ./dist
 
+checksum:
+	bash -c "openssl sha256 < dist/*"
+
 build: clean
 	pipenv run python setup.py sdist
-	openssl sha256 < dist/*
+
+dist: clean build checksum
