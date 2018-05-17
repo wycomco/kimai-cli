@@ -179,10 +179,9 @@ def delete_favorite(name):
 @click.option('--name', prompt='Favorite name', type=str)
 @click.pass_context
 def start_recording_favorite(ctx, name):
-    favorites = config.get('Favorites', default=[])
+    favorites = [f for f in config.get('Favorites', default=[]) if f['Name'] == name]
 
-    if not [f for f in favorites if f['Name'] == name]:
-        print_error('No favorite exists for name "%s"' % name)
+    if not favorites:
         return
 
     favorite = favorites[0]
