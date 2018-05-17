@@ -298,15 +298,21 @@ def list_favorites():
 
 
 @favorites.command('add')
-@click.option('--project-id', prompt='Project Id', type=int)
-@click.option('--task-id', prompt='Task Id', type=int)
+@click.option('--project-id', type=int)
+@click.option('--task-id', type=int)
 @click.option('--name', prompt='Favorite name', type=str)
 def add_favorite(project_id, task_id, name):
     """Adds a favorite."""
+    if not project_id:
+        project_id = prompt_with_autocomplete('Project: ', 'Projects')
+
+    if not task_id:
+        task_id = prompt_with_autocomplete('Task: ', 'Tasks')
+
     try:
         fav.add_favorite(name, project_id, task_id)
     except RuntimeError as e:
-        print_error(e.message)
+        print_error(str(e))
         return
 
     print_success('Successfully added favorite "%s"' % name)
