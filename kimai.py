@@ -5,7 +5,8 @@ import config
 
 def _build_payload(method, *args):
     quoted_args = ['\"%s\"' % arg for arg in args]
-    return '{"jsonrpc":"2.0", "method":"%s", "params":[%s], "id":"1"}' % (method, ','.join(quoted_args))
+    return '{"jsonrpc":"2.0", "method":"%s", "params":[%s], "id":"1"}' \
+        % (method, ','.join(quoted_args))
 
 
 def _do_request(payload):
@@ -36,7 +37,12 @@ def get_tasks():
 
 def start_recording(task_id, project_id):
     """Starts a new recording for the provided task and project."""
-    payload = _build_payload('startRecord', config.get('ApiKey'), project_id, task_id)
+    payload = _build_payload(
+        'startRecord',
+        config.get('ApiKey'),
+        project_id,
+        task_id
+    )
     return KimaiResponse(_do_request(payload))
 
 
@@ -46,7 +52,11 @@ def stop_recording():
     if current_record is None:
         return
 
-    payload = _build_payload('stopRecord', config.get('ApiKey'), current_record['timeEntryID'])
+    payload = _build_payload(
+        'stopRecord',
+        config.get('ApiKey'),
+        current_record['timeEntryID']
+    )
     return KimaiResponse(_do_request(payload))
 
 
@@ -67,7 +77,6 @@ def get_timesheet():
     payload = _build_payload('getTimesheet', config.get('ApiKey'))
     response = KimaiResponse(_do_request(payload))
     return response.items
-
 
 
 class KimaiResponse(object):

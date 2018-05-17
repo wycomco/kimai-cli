@@ -16,8 +16,8 @@ def print_error(message):
 
 def print_table(rows, columns=None):
     """Print a table to the console."""
-    if not columns is None:
-        rows = map(lambda r: { k: r[k] for k in columns if k in r }, rows)
+    if columns is not None:
+        rows = map(lambda r: {k: r[k] for k in columns if k in r}, rows)
     click.echo(tabulate.tabulate(rows, headers='keys', tablefmt="grid"))
 
 
@@ -59,7 +59,10 @@ def projects(ctx):
 @projects.command('list')
 def list_projects():
     """Lists all available projects"""
-    print_table(kimai.get_projects(), columns=['projectID', 'name', 'customerName'])
+    print_table(
+        kimai.get_projects(),
+        columns=['projectID', 'name', 'customerName'],
+    )
 
 
 @cli.group()
@@ -98,7 +101,9 @@ def start_record(task_id, project_id):
     response = kimai.start_recording(task_id, project_id)
 
     if response.successful:
-        print_success('Started recording. To stop recording type \'kimai record stop\'')
+        print_success(
+            'Started recording. To stop recording type \'kimai record stop\''
+        )
     else:
         print_error('Could not start recording: "%s"' % response.error)
 
@@ -126,10 +131,14 @@ def get_current():
     if not current:
         return
 
-    print_table(
-        [current],
-        columns=['timeEntryID', 'start', 'end', 'customerName', 'projectName', 'activityName']
-    )
+    print_table([current], columns=[
+        'timeEntryID',
+        'start',
+        'end',
+        'customerName',
+        'projectName',
+        'activityName'
+    ])
 
 
 @cli.group()
@@ -161,7 +170,11 @@ def add_favorite(project_id, task_id, name):
         print_error('Favorite with name "%s" already exists' % name)
         return
 
-    current_favorites.append({ 'Name': name, 'Project': project_id, 'Task': task_id })
+    current_favorites.append({
+        'Name': name,
+        'Project': project_id,
+        'Task': task_id
+    })
     config.set('Favorites', current_favorites)
     print_success('Successfully added favorite "%s"' % name)
 
@@ -171,7 +184,10 @@ def add_favorite(project_id, task_id, name):
 def delete_favorite(name):
     """Deletes a favorite"""
     current_favorites = config.get('Favorites', default=[])
-    config.set('Favorites', [f for f in current_favorites if f['Name'] != name])
+    config.set(
+        'Favorites',
+        [f for f in current_favorites if f['Name'] != name]
+    )
     print_success('Successfully removed favorite "%s"' % name)
 
 
@@ -179,10 +195,15 @@ def delete_favorite(name):
 @click.option('--name', prompt='Favorite name', type=str)
 @click.pass_context
 def start_recording_favorite(ctx, name):
-    favorites = [f for f in config.get('Favorites', default=[]) if f['Name'] == name]
+    favorites = config.get('Favorites', default=[])
+    favorites = [f for f in favorites if f['Name'] == name]
 
     if not favorites:
         return
 
     favorite = favorites[0]
-    ctx.invoke(start_record, task_id=favorite['Task'], project_id=favorite['Project'])
+    ctx.invoke(
+        start_record,
+        task_id=favorite['Task'],
+        project_id=favorite['Project']
+    )

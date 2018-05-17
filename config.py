@@ -39,7 +39,7 @@ def merge(attributes):
     """Merges the existing config with the provided attributes
     overriding any values that already exist."""
     config = _get_config()
-    write({ **config, **attributes })
+    write({**config, **attributes})
 
 
 def get(key, default=None):
