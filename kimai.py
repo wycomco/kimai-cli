@@ -47,6 +47,7 @@ def start_recording(task_id, project_id):
 
 
 def stop_recording():
+    """Stops the running record if there is one."""
     current_record = get_current()
 
     if current_record is None:
