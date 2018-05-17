@@ -88,6 +88,18 @@ def get_timesheet():
     return response.items
 
 
+def add_record(start, end, project, task, comment=''):
+    payload = _build_record_payload('setTimesheetRecord', {
+        'start': start.isoformat(),
+        'end': end.isoformat(),
+        'projectId': project,
+        'taskId': task,
+        'statusId': 1,
+        'comment': comment
+    })
+    return KimaiResponse(_do_request(payload))
+
+
 class KimaiResponse(object):
     """Generic response object for the Kimai (sort of) JSON API"""
 
