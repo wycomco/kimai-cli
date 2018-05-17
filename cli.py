@@ -5,6 +5,10 @@ import config
 import dates
 import favorites as fav
 
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import Completer, Completion
+from fuzzyfinder import fuzzyfinder
+
 
 def print_success(message):
     """Print success message to the console."""
@@ -21,6 +25,27 @@ def print_table(rows, columns=None):
     if columns is not None:
         rows = map(lambda r: {k: r[k] for k in columns if k in r}, rows)
     click.echo(tabulate.tabulate(rows, headers='keys', tablefmt="grid"))
+
+
+def prompt_with_autocomplete(prompt_title, collection_name, resolve_title=True):
+    cached_collection = config.get(collection_name, {})
+
+    if not cached_collection:
+        click.echo('''No {} downloaded. Falling back to ids. If you 
+        want to have autocompletion for cached_collection, please run 
+        "kimai cached_collection download" first.''')
+
+        return prompt('{} Id:'.format(prompt_title))
+
+    title = None
+
+    while title not in cached_collection:
+        title = prompt(prompt_title, completer=FuzzyCompleter(cached_collection.keys()))
+
+    if resolve_title:
+        return cached_collection[title]
+
+    return title
 
 
 @click.group()
@@ -277,3 +302,14 @@ def start_recording_favorite(ctx, name):
         task_id=favorite.Task,
         project_id=favorite.Project
     )
+
+
+class FuzzyCompleter(Completer):
+    def __init__(self, projects):
+        self.projects = projects
+
+    def get_completions(self, document, complete_event):
+        word_before_cursor = document.get_word_before_cursor(WORD=True)
+        matches = fuzzyfinder(word_before_cursor, self.projects)
+        for m in matches:
+            yield Completion(m, start_position=-len(word_before_cursor))
