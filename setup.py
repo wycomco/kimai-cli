@@ -12,7 +12,8 @@ setup(
         'click',
         'requests',
         'tabulate',
-        'PyYAML'
+        'PyYAML',
+        'dateparser',
     ],
     entry_points='''
         [console_scripts]
