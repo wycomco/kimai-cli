@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='kimai-cli',
-    version='0.2.0',
+    version='0.2.1',
     author='Kai Sassnowski',
     author_email='me@kai-sassnowski.com',
     py_modules=['cli', 'kimai', 'config'],
