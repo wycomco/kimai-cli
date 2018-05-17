@@ -2,6 +2,7 @@ import click
 import tabulate
 import kimai
 import config
+import favorites as fav
 
 
 def print_success(message):
@@ -155,7 +156,7 @@ def favorites(ctx):
 @favorites.command('list')
 def list_favorites():
     """List all favorites"""
-    print_table(config.get('Favorites', default=[]))
+    print_table(fav.list_favorites())
 
 
 @favorites.command('add')
@@ -164,18 +165,12 @@ def list_favorites():
 @click.option('--name', prompt='Favorite name', type=str)
 def add_favorite(project_id, task_id, name):
     """Adds a favorite."""
-    current_favorites = config.get('Favorites', default=[])
-
-    if any(f for f in current_favorites if f['Name'] == name):
-        print_error('Favorite with name "%s" already exists' % name)
+    try:
+        fav.add_favorite(name, project_id, task_id)
+    except RuntimeError as e:
+        print_error(e.message)
         return
 
-    current_favorites.append({
-        'Name': name,
-        'Project': project_id,
-        'Task': task_id
-    })
-    config.set('Favorites', current_favorites)
     print_success('Successfully added favorite "%s"' % name)
 
 
@@ -183,11 +178,7 @@ def add_favorite(project_id, task_id, name):
 @click.option('--name', prompt='Favorite name', type=str)
 def delete_favorite(name):
     """Deletes a favorite"""
-    current_favorites = config.get('Favorites', default=[])
-    config.set(
-        'Favorites',
-        [f for f in current_favorites if f['Name'] != name]
-    )
+    fav.delete_favorite(name)
     print_success('Successfully removed favorite "%s"' % name)
 
 
@@ -195,15 +186,13 @@ def delete_favorite(name):
 @click.option('--name', prompt='Favorite name', type=str)
 @click.pass_context
 def start_recording_favorite(ctx, name):
-    favorites = config.get('Favorites', default=[])
-    favorites = [f for f in favorites if f['Name'] == name]
+    favorite = fav.get_favorite(name)
 
     if not favorites:
         return
 
-    favorite = favorites[0]
     ctx.invoke(
         start_record,
-        task_id=favorite['Task'],
-        project_id=favorite['Project']
+        task_id=favorite.Task,
+        project_id=favorite.Project
     )
