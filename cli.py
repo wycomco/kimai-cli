@@ -260,7 +260,7 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
             print_error(str(e))
             return
 
-    response = kimai.add_record(
+    kimai.add_record(
         start_time,
         end_time,
         project_id,
