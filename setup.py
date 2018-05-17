@@ -13,7 +13,7 @@ setup(
         'requests',
         'tabulate',
         'PyYAML',
-        'dateparser',
+        'parsedatetime',
     ],
     entry_points='''
         [console_scripts]
