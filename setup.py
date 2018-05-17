@@ -14,6 +14,8 @@ setup(
         'tabulate',
         'PyYAML',
         'parsedatetime',
+        'fuzzyfinder',
+        'prompt_toolkit'
     ],
     entry_points='''
         [console_scripts]
