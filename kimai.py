@@ -81,7 +81,9 @@ def get_current():
     if timesheet[0]['end'] != '0':
         return
 
-    return timesheet[0]
+    return Record(timesheet[0])
+
+
 def get_todays_records():
     """Returns all records for the current day"""
     payload = _build_payload(
