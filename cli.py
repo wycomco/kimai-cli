@@ -319,9 +319,12 @@ def add_favorite(project_id, task_id, name):
 
 
 @favorites.command('delete')
-@click.option('--name', prompt='Favorite name', type=str)
+@click.option('--name', type=str)
 def delete_favorite(name):
     """Deletes a favorite"""
+    if not name:
+        name = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
+
     fav.delete_favorite(name)
     print_success('Successfully removed favorite "%s"' % name)
 
