@@ -6,7 +6,7 @@ setup(
     author='Kai Sassnowski',
     author_email='me@kai-sassnowski.com',
     scripts=['bin/kimai-complete.sh'],
-    py_modules=['cli', 'kimai', 'config'],
+    py_modules=['cli', 'kimai', 'config', 'dates', 'favorites'],
     python_requires='>3.5.2',
     install_requires=[
         'click',
