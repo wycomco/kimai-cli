@@ -1,3 +1,6 @@
+autoload -Uz bashcompinit
+bashcompinit -i
+
 _kimai_completion() {
     COMPREPLY=( $( env COMP_WORDS="${COMP_WORDS[*]}" \
                    COMP_CWORD=$COMP_CWORD \
