@@ -108,6 +108,10 @@ def stop_record():
     """Stops the currently running recording (if there is one)"""
     response = kimai.stop_recording()
 
+    if not response:
+        print_success('No recording running.')
+        return
+
     if response.successful:
         print_success('Stopped recording.')
     else:
