@@ -186,9 +186,10 @@ def delete_favorite(name):
 @click.option('--name', prompt='Favorite name', type=str)
 @click.pass_context
 def start_recording_favorite(ctx, name):
-    favorite = fav.get_favorite(name)
-
-    if not favorites:
+    try:
+        favorite = fav.get_favorite(name)
+    except RuntimeError as e:
+        print_error(str(e))
         return
 
     ctx.invoke(
