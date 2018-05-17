@@ -13,7 +13,7 @@ def get_favorite(name):
     favorites = config.get('Favorites')
 
     if name not in favorites:
-        return
+        raise RuntimeError('No favorite for name \'%s\' exists' % name)
 
     favorite = favorites[name]
     return Favorite(name, favorite['Project'], favorite['Task'])
