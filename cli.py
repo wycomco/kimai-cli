@@ -57,7 +57,8 @@ def cli():
 @click.option('--kimai-url', prompt='Kimai URL')
 @click.option('--username', prompt='Username')
 @click.option('--password', prompt='Password', hide_input=True)
-def configure(kimai_url, username, password):
+@click.pass_context
+def configure(ctx, kimai_url, username, password):
     """Configure the Kimai-CLI"""
     config.set('KimaiUrl', kimai_url)
 
@@ -68,6 +69,9 @@ def configure(kimai_url, username, password):
         return
 
     config.set('ApiKey', r.apiKey)
+
+    ctx.invoke(download_projects)
+    ctx.invoke(download_tasks)
 
     print_success('Configuration complete')
 
@@ -92,6 +96,21 @@ def list_projects():
     )
 
 
+@projects.command('download')
+def download_projects():
+    """Downloads all existing projects to disk so they can be used
+    for autocompletion"""
+    remote_projects = kimai.get_projects()
+
+    project_map = {}
+
+    for project in remote_projects:
+        project_map[project['name']] = project['projectID']
+
+    config.set('Projects', project_map)
+    print_success('Successfully downloaded projects.')
+
+
 @cli.group()
 @click.pass_context
 def tasks(ctx):
@@ -107,6 +126,20 @@ def tasks(ctx):
 def list_tasks():
     """Lists all available tasks"""
     print_table(kimai.get_tasks())
+
+
+@tasks.command('download')
+def download_tasks():
+    """Downloads all existing tasks to disk so they can be used for autocompletion"""
+    remote_tasks = kimai.get_tasks()
+
+    task_map = {}
+
+    for task in remote_tasks:
+        task_map[task['name']] = task['activityID']
+
+    config.set('Tasks', task_map)
+    print_success('Successfully downloaded tasks.')
 
 
 @cli.group()
