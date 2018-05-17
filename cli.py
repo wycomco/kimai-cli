@@ -142,6 +142,19 @@ def get_current():
     ])
 
 
+@record.command('get-today')
+def get_today():
+    """Returns all recorded entries for today"""
+    records = kimai.get_todays_records()
+
+    print_table(records, columns=[
+        'timeEntryID',
+        'start',
+        'end',
+        'customerName',
+        'projectName',
+        'activityName'
+    ])
 @cli.group()
 @click.pass_context
 def favorites(ctx):

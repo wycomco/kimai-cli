@@ -1,6 +1,8 @@
 import requests
 import json
 import config
+import dates
+from datetime import datetime
 
 
 def _build_payload(method, *args):
@@ -80,6 +82,16 @@ def get_current():
         return
 
     return timesheet[0]
+def get_todays_records():
+    """Returns all records for the current day"""
+    payload = _build_payload(
+        'getTimesheet',
+        config.get('ApiKey'),
+        dates.parse('today at 00:00').isoformat(),
+        dates.parse('today at 23:59:59').isoformat()
+    )
+    response = KimaiResponse(_do_request(payload))
+    return [Record(r) for r in response.items]
 
 
 def get_timesheet():
@@ -131,3 +143,16 @@ class KimaiAuthResponse(KimaiResponse):
         if not self.successful:
             return None
         return self.items[0]['apiKey']
+
+
+class Record(dict):
+    def __getitem__(self, key):
+        if key in ['start', 'end']:
+            value = int(super(Record, self).__getitem__(key))
+
+            if value == 0:
+                return '-'
+
+            return datetime.fromtimestamp(value).strftime('%H:%M:%S')
+
+        return super(Record, self).__getitem__(key)
