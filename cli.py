@@ -2,6 +2,7 @@ import click
 import tabulate
 import kimai
 import config
+import dates
 import favorites as fav
 
 
@@ -155,6 +156,61 @@ def get_today():
         'projectName',
         'activityName'
     ])
+
+
+@record.command('add')
+@click.option('--start-time', prompt="Start Time", type=str)
+@click.option('--end-time', type=str)
+@click.option('--duration', type=str)
+@click.option('--project-id', type=int)
+@click.option('--task-id', type=int)
+@click.option('--favorite', type=str)
+@click.option('--comment', default='', type=str)
+def add_record(start_time, end_time, duration, favorite, project_id, task_id, comment):
+    if not end_time and not duration:
+        print_error('Need either an end time or a duration.')
+        return
+
+    if not favorite and not (project_id and task_id):
+        print_error('Need either the name of a favorite or a task id and project id')
+        return
+
+    start_time = dates.parse(start_time)
+
+    if start_time is None:
+        print_error('Could not parse start date \'%s\'' % start)
+        return
+
+    if duration:
+        # We assume that any duration should be added to the start time
+        # since it doesn't make sence to have the end time be before the
+        # start time
+        end_time = dates.parse('+' + duration, start)
+    else:
+        end_time = dates.parse(end_time)
+
+    if end_time is None:
+        print_error('Could not parse end date')
+        return
+
+    if favorite:
+        try:
+            favorite = fav.get_favorite(favorite)
+            project_id = favorite.Project
+            task_id = favorite.Task
+        except RuntimeError as e:
+            print_error(str(e))
+            return
+
+    response = kimai.add_record(
+        start_time,
+        end_time,
+        project_id,
+        task_id,
+        comment=comment
+    )
+
+
 @cli.group()
 @click.pass_context
 def favorites(ctx):
