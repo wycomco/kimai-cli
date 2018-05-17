@@ -1,8 +1,10 @@
 from setuptools import setup
 
 setup(
-    name='Kimai CLI',
-    version='0.1.0',
+    name='kimai-cli',
+    version='0.2.0',
+    author='Kai Sassnowski',
+    author_email='me@kai-sassnowski.com',
     py_modules=['cli', 'kimai', 'config'],
     python_requires='>3.5.2',
     install_requires=[
