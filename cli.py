@@ -178,14 +178,14 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
     start_time = dates.parse(start_time)
 
     if start_time is None:
-        print_error('Could not parse start date \'%s\'' % start)
+        print_error('Could not parse start date')
         return
 
     if duration:
         # We assume that any duration should be added to the start time
         # since it doesn't make sence to have the end time be before the
         # start time
-        end_time = dates.parse('+' + duration, start)
+        end_time = dates.parse('+' + duration, start_time)
     else:
         end_time = dates.parse(end_time)
 
