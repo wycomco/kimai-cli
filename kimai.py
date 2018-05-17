@@ -114,6 +114,13 @@ def add_record(start, end, project, task, comment=''):
     return KimaiResponse(_do_request(payload))
 
 
+# TODO: Holy shit this doesn't check that I'm actually deleting one of my
+#       own records...
+def delete_record(id):
+    payload = _build_payload('removeTimesheetRecord', config.get('ApiKey'), id)
+    return KimaiResponse(_do_request(payload))
+
+
 class KimaiResponse(object):
     """Generic response object for the Kimai (sort of) JSON API"""
 

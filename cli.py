@@ -211,6 +211,17 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
     )
 
 
+@record.command('delete')
+@click.option('--id', prompt='Entry Id', type=int)
+def delete_record(id):
+    response = kimai.delete_record(id)
+
+    if not response.successful:
+        print_error(response.error)
+    else:
+        print_success('Record successfully deleted')
+
+
 @cli.group()
 @click.pass_context
 def favorites(ctx):
