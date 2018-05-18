@@ -76,6 +76,37 @@ def configure(ctx, kimai_url, username, password):
     print_success('Configuration complete')
 
 
+@cli.command('stop')
+@click.pass_context
+def stop(ctx):
+    """Stop the currently running record"""
+    ctx.invoke(stop_record)
+
+
+@cli.command('start')
+@click.option('--task-id', '-t', type=int)
+@click.option('--project-id', '-p', type=int)
+@click.option('--favorite', '-f', type=str)
+@click.pass_context
+def start(ctx, task_id, project_id, favorite):
+    """Start a new record"""
+    ctx.invoke(start_record, task_id=task_id, project_id=project_id, favorite=favorite)
+
+
+@cli.command('get-current')
+@click.pass_context
+def get_current(ctx):
+    """Show the currently running record"""
+    ctx.invoke(get_current_record)
+
+
+@cli.command('today')
+@click.pass_context
+def today(ctx):
+    """Show today's tracked records"""
+    ctx.invoke(get_today)
+
+
 @cli.group()
 @click.pass_context
 def projects(ctx):
@@ -199,7 +230,7 @@ def stop_record():
 
 
 @record.command('get-current')
-def get_current():
+def get_current_record():
     """Get the currently running time recording."""
     current = kimai.get_current()
 
