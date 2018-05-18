@@ -153,10 +153,25 @@ def record(ctx):
 
 
 @record.command('start')
-@click.option('--task-id', prompt='Task Id', type=int)
-@click.option('--project-id', prompt='Project Id', type=int)
-def start_record(task_id, project_id):
+@click.option('--task-id', type=int)
+@click.option('--project-id', type=int)
+@click.option('--favorite', type=str)
+def start_record(task_id, project_id, favorite):
     """Start a new time recording"""
+
+    if not favorite and not (project_id and task_id):
+        print_error('Need either the name of a favorite or a task id and project id')
+        return
+
+    if favorite:
+        try:
+            favorite = fav.get_favorite(favorite)
+            project_id = favorite.Project
+            task_id = favorite.Task
+        except RuntimeError as e:
+            print_error(str(e))
+            return
+
     response = kimai.start_recording(task_id, project_id)
 
     if response.successful:
