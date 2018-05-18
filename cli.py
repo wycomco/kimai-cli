@@ -195,8 +195,7 @@ def start_record(task_id, project_id, favorite):
     """Start a new time recording"""
 
     if not favorite and not (project_id and task_id):
-        print_error('Need either the name of a favorite or a task id and project id')
-        return
+        favorite = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
 
     if favorite:
         try:
@@ -288,8 +287,7 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
         return
 
     if not favorite and not (project_id and task_id):
-        print_error('Need either the name of a favorite or a task id and project id')
-        return
+        favorite = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
 
     start_time = dates.parse(start_time)
 
