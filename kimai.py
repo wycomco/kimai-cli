@@ -21,28 +21,27 @@ def _build_record_payload(method, record, update=False):
 
 def _do_request(payload):
     kimai_url = config.get('KimaiUrl')
-    return requests.post('{}/core/json.php'.format(kimai_url), data=payload)
+    response = requests.post('{}/core/json.php'.format(kimai_url), data=payload)
+    return KimaiResponse(response)
 
 
 def authenticate(username, password):
     """Authenticate a user against the kimai backend."""
     payload = _build_payload('authenticate', username, password)
-    response = _do_request(payload)
+    response = requests.post('{}/core/json.php'.format(config.get('KimaiUrl')), data=payload)
     return KimaiAuthResponse(response)
 
 
 def get_projects():
     """Return a list of all available projects."""
     payload = _build_payload('getProjects', config.get('ApiKey'))
-    response = KimaiResponse(_do_request(payload))
-    return response.items
+    return _do_request(payload).items
 
 
 def get_tasks():
     """Return a list of all available tasks."""
     payload = _build_payload('getTasks', config.get('ApiKey'))
-    response = KimaiResponse(_do_request(payload))
-    return response.items
+    return _do_request(payload).items
 
 
 def start_recording(task_id, project_id):
@@ -54,7 +53,7 @@ def start_recording(task_id, project_id):
         task_id
     )
 
-    response = KimaiResponse(_do_request(payload))
+    response = _do_request(payload)
 
     if response.successful:
         current = get_current()
@@ -77,7 +76,7 @@ def stop_recording():
         time_entry_id
     )
 
-    response = KimaiResponse(_do_request(payload))
+    response = _do_request(payload)
 
     if response.successful:
         config.delete('CurrentEntry')
@@ -106,13 +105,13 @@ def get_todays_records():
         dates.parse('today at 00:00').isoformat(),
         dates.parse('today at 23:59:59').isoformat()
     )
-    response = KimaiResponse(_do_request(payload))
+    response = _do_request(payload)
     return [Record(r) for r in response.items]
 
 
 def get_timesheet():
     payload = _build_payload('getTimesheet', config.get('ApiKey'))
-    response = KimaiResponse(_do_request(payload))
+    response = _do_request(payload)
     return response.items
 
 
@@ -125,14 +124,14 @@ def add_record(start, end, project, task, comment=''):
         'statusId': 1,
         'comment': comment
     })
-    return KimaiResponse(_do_request(payload))
+    return _do_request(payload)
 
 
 # TODO: Holy shit this doesn't check that I'm actually deleting one of my
 #       own records...
 def delete_record(id):
     payload = _build_payload('removeTimesheetRecord', config.get('ApiKey'), id)
-    return KimaiResponse(_do_request(payload))
+    return _do_request(payload)
 
 
 class KimaiResponse(object):
