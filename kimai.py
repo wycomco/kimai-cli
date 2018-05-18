@@ -2,6 +2,7 @@ import requests
 import json
 import config
 import dates
+from functools import lru_cache
 from datetime import datetime
 
 
@@ -19,6 +20,7 @@ def _build_record_payload(method, record, update=False):
         % (method, config.get('ApiKey'), json.dumps(record), update)
 
 
+@lru_cache()
 def _do_request(payload):
     kimai_url = config.get('KimaiUrl')
     response = requests.post('{}/core/json.php'.format(kimai_url), data=payload)
