@@ -4,6 +4,7 @@ import kimai
 import config
 import dates
 import favorites as fav
+import datetime
 
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import Completer, Completion
@@ -221,6 +222,11 @@ def get_today():
     """Returns all recorded entries for today"""
     records = kimai.get_todays_records()
 
+    total = datetime.timedelta()
+    for r in records:
+        total += r['timedelta']
+    total = ':'.join(str(total).split(':')[:2])
+
     print_table(records, columns=[
         'timeEntryID',
         'start_time',
@@ -230,6 +236,9 @@ def get_today():
         'projectName',
         'activityName'
     ])
+
+    click.echo(click.style('Total: ', fg='green', bold=True) + total + 'h')
+
 
 
 @record.command('add')
