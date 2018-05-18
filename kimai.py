@@ -155,13 +155,31 @@ class KimaiAuthResponse(KimaiResponse):
 
 
 class Record(dict):
-    def __getitem__(self, key):
-        if key in ['start', 'end']:
-            value = int(super(Record, self).__getitem__(key))
+    """A single time tracking entry."""
 
-            if value == 0:
-                return '-'
+    def __init__(self, seq, **kwargs):
+        super().__init__(seq, **kwargs)
 
-            return datetime.fromtimestamp(value).strftime('%H:%M:%S')
+        self['start'] = datetime.fromtimestamp(int(self['start']))
+        self['start_time'] = self['start'].strftime('%H:%M')
 
-        return super(Record, self).__getitem__(key)
+        if int(self['end']) == 0:
+            self['end'] = None
+            self['end_time'] = None
+        else:
+            self['end'] = datetime.fromtimestamp(int(self['end']))
+            self['end_time'] = self['end'].strftime('%H:%M')
+
+        self._calculate_duration()
+
+    def _calculate_duration(self):
+        if self['end'] is None:
+            duration = (datetime.now() - self['start'])
+        else:
+            duration = (self['end'] - self['start'])
+
+        self['timedelta'] = duration
+        self['duration'] = ':'.join(str(duration).split(':')[:2])
+
+
+
