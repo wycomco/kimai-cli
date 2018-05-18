@@ -153,6 +153,15 @@ def get_timesheet():
     return response.items
 
 
+def get_single_record(id):
+    """Retrieves a single record from Kimai"""
+    payload = _build_payload('getTimesheetRecord', config.get('ApiKey'), id)
+    response = _do_request(payload)
+
+    if response.successful:
+        return Record(response.items[0])
+
+
 def add_record(start, end, project, task, comment=''):
     """Add a new record to Kimai"""
     payload = _build_record_payload('setTimesheetRecord', {
