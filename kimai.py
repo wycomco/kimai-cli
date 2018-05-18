@@ -147,12 +147,14 @@ def get_todays_records():
 
 
 def get_timesheet():
+    """Returns all timesheets for a user"""
     payload = _build_payload('getTimesheet', config.get('ApiKey'))
     response = _do_request(payload)
     return response.items
 
 
 def add_record(start, end, project, task, comment=''):
+    """Add a new record to Kimai"""
     payload = _build_record_payload('setTimesheetRecord', {
         'start': start.isoformat(),
         'end': end.isoformat(),
