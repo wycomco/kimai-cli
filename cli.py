@@ -207,8 +207,9 @@ def get_current():
 
     print_table([current], columns=[
         'timeEntryID',
-        'start',
-        'end',
+        'start_time',
+        'end_time',
+        'duration',
         'customerName',
         'projectName',
         'activityName'
@@ -222,8 +223,9 @@ def get_today():
 
     print_table(records, columns=[
         'timeEntryID',
-        'start',
-        'end',
+        'start_time',
+        'end_time',
+        'duration',
         'customerName',
         'projectName',
         'activityName'
