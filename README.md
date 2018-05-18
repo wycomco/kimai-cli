@@ -19,9 +19,10 @@ You can now use the `kimai` command in your shell. Before first use you need to 
 kimai configure
 ```
 
-This will prompot you for your kimai URL (e.g. `https://kimai.your-site.com`) and your login credentials.
+This will prompt you for your kimai URL (e.g. `https://kimai.your-site.com`) and your login credentials.
 These credentials will only be used to retrieve your api key from the Kimai backend. They will not be stored
 anywhere.
+
 
 ## Updating
 
