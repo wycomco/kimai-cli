@@ -333,7 +333,11 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
 @record.command('delete')
 @click.option('--id', '-i', prompt='Entry Id', type=int)
 def delete_record(id):
-    response = kimai.delete_record(id)
+    try:
+        response = kimai.delete_record(id)
+    except RuntimeError as e:
+        print_error(str(e))
+        return
 
     if not response.successful:
         print_error(response.error)

@@ -27,6 +27,37 @@ def _do_request(payload):
     return KimaiResponse(response)
 
 
+def authorize_user(record_id):
+    record = get_single_record(record_id)
+
+    if not record:
+        raise RuntimeError('No record exists for id %s' % record_id)
+
+    # This is hack around the fact that the Kimai API does not check whether or not
+    # the current user actually has permissions to edit a record. Since there is no
+    # direct way of retrieving the current user's id, we have to help ourselves by
+    # simply retrieving any record using the saved API key and compare the returned
+    # record's user id with the user id of the record we're trying to operate on.
+    payload = _build_payload(
+        'getTimesheet',
+        config.get('ApiKey'),
+        0,   # No particular start date
+        0,   # No particular end date
+        -1,  # Whatever this one is
+        0,   # No particular starting id
+        1    # Limit to one record
+    )
+    user_records = _do_request(payload).items
+
+    if not user_records:
+        raise RuntimeError('You are not authorized to edit this record')
+
+    current_user_item = Record(user_records[0])
+
+    if not str(record.userID) == str(current_user_item.userID):
+        raise RuntimeError('You are not authorized to edit this record')
+
+
 def authenticate(username, password):
     """Authenticate a user against the kimai backend."""
     payload = _build_payload('authenticate', username, password)
@@ -68,7 +99,11 @@ def stop_recording():
     """Stops the running record if there is one."""
     time_entry_id = config.get('CurrentEntry')
 
-    if time_entry_id is None:
+    if time_entry_id is not None:
+        # Since the saved time entry id could have been tampered with by someone
+        # editing the config directly, we have to check it again here.
+        authorize_user(time_entry_id)
+    else:
         current_record = get_current()
         time_entry_id = current_record['timeEntryID']
 
@@ -129,9 +164,9 @@ def add_record(start, end, project, task, comment=''):
     return _do_request(payload)
 
 
-# TODO: Holy shit this doesn't check that I'm actually deleting one of my
-#       own records...
 def delete_record(id):
+    """Delete a record by its id. You can only delete your own records."""
+    authorize_user(id)
     payload = _build_payload('removeTimesheetRecord', config.get('ApiKey'), id)
     return _do_request(payload)
 
