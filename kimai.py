@@ -213,14 +213,14 @@ class Record(dict):
         super().__init__(seq, **kwargs)
 
         self['start'] = datetime.fromtimestamp(int(self['start']))
-        self['start_time'] = self['start'].strftime('%H:%M')
+        self['start_time'] = self['start'].strftime('%H:%M:%S')
 
         if int(self['end']) == 0:
             self['end'] = None
             self['end_time'] = None
         else:
             self['end'] = datetime.fromtimestamp(int(self['end']))
-            self['end_time'] = self['end'].strftime('%H:%M')
+            self['end_time'] = self['end'].strftime('%H:%M:%S')
 
         self._calculate_duration()
 
@@ -231,7 +231,8 @@ class Record(dict):
             duration = (self['end'] - self['start'])
 
         self['timedelta'] = duration
-        self['duration'] = ':'.join(str(duration).split(':')[:2])
+        self['duration'] = ':'.join(str(duration).split(':')[:3])
 
-
+    def __getattr__(self, attr):
+        return self[attr]
 
