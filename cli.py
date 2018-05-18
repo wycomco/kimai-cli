@@ -54,9 +54,9 @@ def cli():
 
 
 @cli.command()
-@click.option('--kimai-url', prompt='Kimai URL')
-@click.option('--username', prompt='Username')
-@click.option('--password', prompt='Password', hide_input=True)
+@click.option('--kimai-url', '-k', prompt='Kimai URL')
+@click.option('--username', '-u', prompt='Username')
+@click.option('--password', '-p', prompt='Password', hide_input=True)
 @click.pass_context
 def configure(ctx, kimai_url, username, password):
     """Configure the Kimai-CLI"""
@@ -154,9 +154,9 @@ def record(ctx):
 
 
 @record.command('start')
-@click.option('--task-id', type=int)
-@click.option('--project-id', type=int)
-@click.option('--favorite', type=str)
+@click.option('--task-id', '-t', type=int)
+@click.option('--project-id', '-p', type=int)
+@click.option('--favorite', '-f', type=str)
 def start_record(task_id, project_id, favorite):
     """Start a new time recording"""
 
@@ -240,15 +240,14 @@ def get_today():
     click.echo(click.style('Total: ', fg='green', bold=True) + total + 'h')
 
 
-
 @record.command('add')
-@click.option('--start-time', prompt="Start Time", type=str)
-@click.option('--end-time', type=str)
-@click.option('--duration', type=str)
-@click.option('--project-id', type=int)
-@click.option('--task-id', type=int)
-@click.option('--favorite', type=str)
-@click.option('--comment', default='', type=str)
+@click.option('--start-time', '-s', prompt="Start Time", type=str)
+@click.option('--end-time', '-e', type=str)
+@click.option('--duration', '-d', type=str)
+@click.option('--project-id', '-p', type=int)
+@click.option('--task-id', '-t', type=int)
+@click.option('--favorite', '-f', type=str)
+@click.option('--comment', '-c', default='', type=str)
 def add_record(start_time, end_time, duration, favorite, project_id, task_id, comment):
     if not end_time and not duration:
         print_error('Need either an end time or a duration.')
@@ -295,7 +294,7 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
 
 
 @record.command('delete')
-@click.option('--id', prompt='Entry Id', type=int)
+@click.option('--id', '-i', prompt='Entry Id', type=int)
 def delete_record(id):
     response = kimai.delete_record(id)
 
@@ -323,9 +322,9 @@ def list_favorites():
 
 
 @favorites.command('add')
-@click.option('--project-id', type=int)
-@click.option('--task-id', type=int)
-@click.option('--name', prompt='Favorite name', type=str)
+@click.option('--project-id', '-p', type=int)
+@click.option('--task-id', '-t', type=int)
+@click.option('--name', '-n', prompt='Favorite name', type=str)
 def add_favorite(project_id, task_id, name):
     """Adds a favorite."""
     if not project_id:
@@ -344,7 +343,7 @@ def add_favorite(project_id, task_id, name):
 
 
 @favorites.command('delete')
-@click.option('--name', type=str)
+@click.option('--name', '-n', type=str)
 def delete_favorite(name):
     """Deletes a favorite"""
     if not name:
@@ -355,7 +354,7 @@ def delete_favorite(name):
 
 
 @favorites.command('start')
-@click.option('--name', type=str)
+@click.option('--name', '-n', type=str)
 @click.pass_context
 def start_recording_favorite(ctx, name):
     if not name:
