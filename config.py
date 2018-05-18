@@ -51,3 +51,10 @@ def get(key, default=None):
         return default
 
     return config[key]
+
+
+def delete(key):
+    """Removes a key from the config"""
+    config = _get_config()
+    del config[key]
+    write(config)
