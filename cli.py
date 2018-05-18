@@ -59,7 +59,7 @@ def cli():
 @click.option('--password', '-p', prompt='Password', hide_input=True)
 @click.pass_context
 def configure(ctx, kimai_url, username, password):
-    """Configure the Kimai-CLI"""
+    """Configure the Kimai CLI"""
     config.set('KimaiUrl', kimai_url)
 
     r = kimai.authenticate(username, password)
@@ -110,6 +110,7 @@ def today(ctx):
 @cli.group()
 @click.pass_context
 def projects(ctx):
+    """Display and download projects from Kimai"""
     if config.get('ApiKey') is None:
         print_error(
             '''kimai-cli has not yet been configured. Use \'kimai configure\'
@@ -145,6 +146,7 @@ def download_projects():
 @cli.group()
 @click.pass_context
 def tasks(ctx):
+    """Display and download tasks from Kimai"""
     if config.get('ApiKey') is None:
         print_error(
             '''kimai-cli has not yet been configured. Use \'kimai configure\'
@@ -176,6 +178,7 @@ def download_tasks():
 @cli.group()
 @click.pass_context
 def record(ctx):
+    """Create/Update/Delete records"""
     if config.get('ApiKey') is None:
         print_error(
             '''kimai-cli has not yet been configured. Use \'kimai configure\'
@@ -338,6 +341,7 @@ def delete_record(id):
 @cli.group()
 @click.pass_context
 def favorites(ctx):
+    """Create and manage favorites"""
     if config.get('ApiKey') is None:
         print_error(
             '''kimai-cli has not yet been configured. Use \'kimai configure\'
