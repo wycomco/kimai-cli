@@ -53,22 +53,36 @@ def start_recording(task_id, project_id):
         project_id,
         task_id
     )
-    return KimaiResponse(_do_request(payload))
+
+    response = KimaiResponse(_do_request(payload))
+
+    if response.successful:
+        current = get_current()
+        config.set('CurrentEntry', current['timeEntryID'])
+
+    return response
 
 
 def stop_recording():
     """Stops the running record if there is one."""
-    current_record = get_current()
+    time_entry_id = config.get('CurrentEntry')
 
-    if current_record is None:
-        return
+    if time_entry_id is None:
+        current_record = get_current()
+        time_entry_id = current_record['timeEntryID']
 
     payload = _build_payload(
         'stopRecord',
         config.get('ApiKey'),
-        current_record['timeEntryID']
+        time_entry_id
     )
-    return KimaiResponse(_do_request(payload))
+
+    response = KimaiResponse(_do_request(payload))
+
+    if response.successful:
+        config.delete('CurrentEntry')
+
+    return response
 
 
 def get_current():
