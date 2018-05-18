@@ -246,7 +246,8 @@ def get_current_record():
         'duration',
         'customerName',
         'projectName',
-        'activityName'
+        'activityName',
+        'comment',
     ])
 
 
@@ -267,7 +268,8 @@ def get_today():
         'duration',
         'customerName',
         'projectName',
-        'activityName'
+        'activityName',
+        'comment',
     ])
 
     click.echo(click.style('Total: ', fg='green', bold=True) + total + 'h')
