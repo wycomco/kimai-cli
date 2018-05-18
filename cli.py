@@ -318,6 +318,9 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
             print_error(str(e))
             return
 
+    if not comment:
+        comment = click.edit('# Please enter a description of your activity')
+
     kimai.add_record(
         start_time,
         end_time,
