@@ -126,13 +126,19 @@ def stop_recording():
 
     response = _do_request(payload)
 
+    # If we were successful in stopping the running record we now try to set
+    # its comment if the user entered one. We have to do it like this because
+    # Kimai does not expose a direct way to edit a running record.
     if response.successful:
-        config.delete('CurrentEntry')
         comment = config.get('Comment')
 
         if comment:
             comment_on_record(time_entry_id, comment)
+            # Make sure we delete the comment if we successfully saved it.
+            # Otherwise it would show up for the next record as well.
             config.delete('Comment')
+
+        config.delete('CurrentEntry')
 
     return response
 
