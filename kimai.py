@@ -26,6 +26,7 @@ def _do_request(payload):
     return KimaiResponse(response)
 
 
+@lru_cache()
 def authorize_user(record_id):
     record = get_single_record(record_id)
 
