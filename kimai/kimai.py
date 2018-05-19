@@ -77,16 +77,17 @@ def authorize_user(record_id):
     # direct way of retrieving the current user's id, we have to help ourselves by
     # simply retrieving any record using the saved API key and compare the returned
     # record's user id with the user id of the record we're trying to operate on.
-    payload = _build_payload(
+    payload = RequestPayload(
         'getTimesheet',
-        config.get('ApiKey'),
-        0,   # No particular start date
-        0,   # No particular end date
-        -1,  # Whatever this one is
-        0,   # No particular starting id
-        1    # Limit to one record
+        params=[
+            RequestParameter(0),   # No particular start date
+            RequestParameter(0),   # No particular end date
+            RequestParameter(-1),  # Whatever this one is
+            RequestParameter(0),   # No particular starting id
+            RequestParameter(1)    # Limit to one record
+        ]
     )
-    user_records = _do_request(payload).items
+    user_records = _do_request(payload.build()).items
 
     if not user_records:
         raise RuntimeError('You are not authorized to edit this record')
