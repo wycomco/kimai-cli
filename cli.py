@@ -414,8 +414,9 @@ def delete_favorite(name):
 
 @favorites.command('start')
 @click.option('--name', '-n', type=str)
+@click.option('--comment', '-c', type=str)
 @click.pass_context
-def start_recording_favorite(ctx, name):
+def start_recording_favorite(ctx, name, comment):
     if not name:
         name = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
 
@@ -428,7 +429,8 @@ def start_recording_favorite(ctx, name):
     ctx.invoke(
         start_record,
         task_id=favorite.Task,
-        project_id=favorite.Project
+        project_id=favorite.Project,
+        comment=comment
     )
 
 
