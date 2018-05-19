@@ -70,7 +70,7 @@ def configure(ctx, kimai_url, username, password):
         print_error('Authentication failed.')
         return
 
-    config.set('ApiKey', r.apiKey)
+    config.set('ApiKey', r.api_key)
 
     ctx.invoke(download_projects)
     ctx.invoke(download_tasks)

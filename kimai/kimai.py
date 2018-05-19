@@ -250,7 +250,7 @@ class KimaiAuthResponse(KimaiResponse):
     """Specific response for the result of an authentication request"""
 
     @property
-    def apiKey(self):
+    def api_key(self):
         if not self.successful:
             return None
         return self.items[0]['apiKey']
