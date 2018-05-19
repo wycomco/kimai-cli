@@ -279,8 +279,8 @@ def comment_on_record(record_id, comment):
 def delete_record(id):
     """Delete a record by its id. You can only delete your own records."""
     authorize_user(id)
-    payload = _build_payload('removeTimesheetRecord', config.get('ApiKey'), id)
-    return _do_request(payload)
+    payload = RequestPayload('removeTimesheetRecord', params=[RequestParameter(id)])
+    return _do_request(payload.build())
 
 
 class KimaiResponse(object):
