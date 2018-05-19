@@ -164,7 +164,7 @@ def stop_recording():
         authorize_user(time_entry_id)
     else:
         current_record = get_current()
-        time_entry_id = current_record['timeEntryID']
+        time_entry_id = current_record.id
 
     payload = _build_payload(
         'stopRecord',
