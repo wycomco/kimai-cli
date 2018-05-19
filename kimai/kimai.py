@@ -224,8 +224,11 @@ def get_timesheet():
 def get_single_record(record_id):
     """Retrieves a single record from Kimai"""
 
-    payload = _build_payload('getTimesheetRecord', config.get('ApiKey'), record_id)
-    response = _do_request(payload)
+    payload = RequestPayload(
+        'getTimesheetRecord',
+        params=[RequestParameter(record_id)]
+    )
+    response = _do_request(payload.build())
 
     if response.successful:
         return create_record(response.items[0])
