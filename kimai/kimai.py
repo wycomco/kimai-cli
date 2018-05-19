@@ -158,13 +158,12 @@ def stop_recording():
         current_record = get_current()
         time_entry_id = current_record.id
 
-    payload = _build_payload(
+    payload = RequestPayload(
         'stopRecord',
-        config.get('ApiKey'),
-        time_entry_id
+        params=[RequestParameter(time_entry_id)]
     )
 
-    response = _do_request(payload)
+    response = _do_request(payload.build())
 
     # If we were successful in stopping the running record we now try to set
     # its comment if the user entered one. We have to do it like this because
