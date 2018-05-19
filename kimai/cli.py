@@ -24,8 +24,10 @@ def print_error(message):
 
 def print_table(rows, columns=None):
     """Print a table to the console."""
+
     if columns is not None:
         rows = map(lambda r: {k: r[k] for k in columns if k in r}, rows)
+
     click.echo(tabulate.tabulate(rows, headers='keys', tablefmt="grid"))
 
 
