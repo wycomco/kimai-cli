@@ -31,6 +31,35 @@ def print_table(rows, columns=None):
     click.echo(tabulate.tabulate(rows, headers='keys', tablefmt="grid"))
 
 
+def print_records(records):
+    """Prints a list of record as a table"""
+
+    def extract_record_row(record: Record):
+        if record.end:
+            end = record.end.strftime('%H:%M:%S')
+        else:
+            end = '-'
+
+        duration = ':'.join(str(record.duration).split(':')[:2])
+
+        return [
+            record.id,
+            record.start.strftime('%H:%M:%S'),
+            end,
+            duration,
+            record.customer,
+            record.project,
+            record.task,
+            record.comment
+        ]
+
+    headers = ['Id', 'Start Time', 'End Time', 'Duration', 'Customer', 'Project', 'Task', 'Comment']
+    rows = [extract_record_row(r) for r in records]
+
+    table = tabulate.tabulate(rows, headers, tablefmt="grid")
+    click.echo(table)
+
+
 def prompt_with_autocomplete(prompt_title, collection_name, resolve_title=True):
     cached_collection = config.get(collection_name, {})
 
