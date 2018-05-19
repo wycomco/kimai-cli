@@ -363,16 +363,27 @@ def delete_record(id):
             print_success('Record %s successfully deleted' % record_id)
 
 
+@record.command('comment')
+@click.option('--id', '-i', prompt="Id", type=int)
+@click.option('--comment', '-c', type=str,
+              help="When providing a comment through the cli you overwrite any comment that was already present")
+def comment_on_record(id, comment):
     try:
-        response = kimai.delete_record(id)
+        kimai.authorize_user(id)
     except RuntimeError as e:
         print_error(str(e))
         return
 
-    if not response.successful:
-        print_error(response.error)
-    else:
-        print_success('Record successfully deleted')
+    record = kimai.get_single_record(id)
+
+    if not record:
+        print_error('No entry exists for id %s' % id)
+        return
+
+    if not comment:
+        comment = click.edit(record.comment)
+
+    kimai.comment_on_record(id, comment)
 
 
 @cli.group()
