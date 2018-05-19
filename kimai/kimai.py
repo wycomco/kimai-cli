@@ -215,8 +215,9 @@ def get_todays_records():
 def get_timesheet():
     """Returns all time sheets for a user"""
 
-    payload = _build_payload('getTimesheet', config.get('ApiKey'))
-    response = _do_request(payload)
+    payload = RequestPayload('getTimesheet')
+    response = _do_request(payload.build())
+
     return response.items
 
 
