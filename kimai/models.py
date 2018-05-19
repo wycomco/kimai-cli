@@ -66,7 +66,7 @@ class Record(object):
             end = None
 
         # Convert duration to a timedelta so we can more easily add up running times
-        if duration:
+        if duration is not None:
             duration = timedelta(seconds=int(duration))
 
         # Kimai does not calculate a duration for a running record. So we do that ourselves.
