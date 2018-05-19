@@ -205,9 +205,9 @@ def record(ctx):
 @click.option('--task-id', '-t', type=int)
 @click.option('--project-id', '-p', type=int)
 @click.option('--favorite', '-f', type=str)
-def start_record(task_id, project_id, favorite):
+@click.option('--comment', '-c', type=str)
+def start_record(task_id, project_id, favorite, comment):
     """Start a new time recording"""
-
     if not favorite and not (project_id and task_id):
         favorite = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
 
@@ -223,6 +223,7 @@ def start_record(task_id, project_id, favorite):
     response = kimai.start_recording(task_id, project_id)
 
     if response.successful:
+        config.set('Comment', comment)
         print_success(
             'Started recording. To stop recording type \'kimai record stop\''
         )
