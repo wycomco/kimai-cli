@@ -10,6 +10,9 @@ from .models import create_record
 
 
 class RequestParameter(object):
+    """Represents a single parameter that gets sent as part of the request
+    payload."""
+
     def __init__(self, value, quoted=True):
         self.quoted = quoted
         self.value = value
@@ -23,6 +26,7 @@ class RequestParameter(object):
         elif type(self.value) == dict:
             value = json.dumps(self.value)
 
+        # Some parameters need to be quoted, others don't...
         if self.quoted:
             return '\"%s\"' % value
 
@@ -33,6 +37,7 @@ class RequestParameter(object):
 
 
 class RequestPayload(object):
+    """Represents the string that gets send as the request payload."""
 
     def __init__(self, action, requires_auth=True, params=None):
         self.action = action
