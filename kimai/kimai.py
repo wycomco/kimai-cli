@@ -124,17 +124,13 @@ def authenticate(username, password):
 def get_projects():
     """Return a list of all available projects."""
 
-    payload = _build_payload('getProjects', config.get('ApiKey'))
-
-    return _do_request(payload).items
+    return _do_request(RequestPayload('getProjects').build()).items
 
 
 def get_tasks():
     """Return a list of all available tasks."""
 
-    payload = _build_payload('getTasks', config.get('ApiKey'))
-
-    return _do_request(payload).items
+    return _do_request(RequestPayload('getTasks').build()).items
 
 
 def start_recording(task_id, project_id):
