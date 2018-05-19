@@ -93,6 +93,21 @@ def start(ctx, task_id, project_id, favorite):
     ctx.invoke(start_record, task_id=task_id, project_id=project_id, favorite=favorite)
 
 
+@cli.command('comment')
+def comment():
+    """Comment on the currently running record"""
+    record_id = config.get('CurrentEntry')
+
+    if not record_id:
+        print_error('No record currently running')
+        return
+
+    current_comment = config.get('Comment')
+    new_comment = click.edit(current_comment)
+
+    config.set('Comment', new_comment)
+
+
 @cli.command('get-current')
 @click.pass_context
 def get_current(ctx):
