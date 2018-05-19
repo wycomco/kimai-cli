@@ -58,9 +58,12 @@ class RequestPayload(object):
         return self.build()
 
 
-def _do_request(payload: RequestPayload):
+def send_request(payload: RequestPayload):
+    """Sends the request described in the payload to the Kimai API."""
+
     kimai_url = config.get('KimaiUrl')
     response = requests.post('{}/core/json.php'.format(kimai_url), data=payload.build())
+
     return KimaiResponse(response)
 
 
@@ -86,7 +89,7 @@ def authorize_user(record_id):
             RequestParameter(1)    # Limit to one record
         ]
     )
-    user_records = _do_request(payload).items
+    user_records = send_request(payload).items
 
     if not user_records:
         raise RuntimeError('You are not authorized to edit this record')
@@ -116,13 +119,13 @@ def authenticate(username, password):
 def get_projects():
     """Return a list of all available projects."""
 
-    return _do_request(RequestPayload('getProjects').build()).items
+    return send_request(RequestPayload('getProjects').build()).items
 
 
 def get_tasks():
     """Return a list of all available tasks."""
 
-    return _do_request(RequestPayload('getTasks').build()).items
+    return send_request(RequestPayload('getTasks').build()).items
 
 
 def start_recording(task_id, project_id):
@@ -136,7 +139,7 @@ def start_recording(task_id, project_id):
         ]
     )
 
-    response = _do_request(payload)
+    response = send_request(payload)
 
     if response.successful:
         current = get_current()
@@ -163,7 +166,7 @@ def stop_recording():
         params=[RequestParameter(time_entry_id)]
     )
 
-    response = _do_request(payload)
+    response = send_request(payload)
 
     # If we were successful in stopping the running record we now try to set
     # its comment if the user entered one. We have to do it like this because
@@ -186,7 +189,6 @@ def get_current():
     """Returns the currently running record if there is any."""
 
     timesheet = get_timesheet()
-
     if not timesheet:
         return
 
@@ -207,7 +209,7 @@ def get_todays_records():
         ]
     )
 
-    response = _do_request(payload)
+    response = send_request(payload)
 
     return [create_record(r) for r in response.items]
 
@@ -216,7 +218,7 @@ def get_timesheet():
     """Returns all time sheets for a user"""
 
     payload = RequestPayload('getTimesheet')
-    response = _do_request(payload)
+    response = send_request(payload)
 
     return response.items
 
@@ -228,7 +230,7 @@ def get_single_record(record_id):
         'getTimesheetRecord',
         params=[RequestParameter(record_id)]
     )
-    response = _do_request(payload)
+    response = send_request(payload)
 
     if response.successful:
         return create_record(response.items[0])
@@ -248,7 +250,7 @@ def add_record(start, end, project, task, comment=''):
 
     payload = RequestPayload('setTimesheetRecord', params=[record_param])
 
-    return _do_request(payload)
+    return send_request(payload)
 
 
 def comment_on_record(record_id, comment):
@@ -272,14 +274,14 @@ def comment_on_record(record_id, comment):
         RequestParameter(True),  # Update the record
     ])
 
-    response = _do_request(payload)
+    response = send_request(payload)
 
 
 def delete_record(id):
     """Delete a record by its id. You can only delete your own records."""
     authorize_user(id)
     payload = RequestPayload('removeTimesheetRecord', params=[RequestParameter(id)])
-    return _do_request(payload)
+    return send_request(payload)
 
 
 class KimaiResponse(object):
