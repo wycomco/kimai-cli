@@ -59,14 +59,6 @@ def _build_payload(method, *args):
         % (method, ','.join(quoted_args))
 
 
-def _build_record_payload(method, record, update=False):
-    # Make it compatible with PHP's json decode
-    update = 'true' if update else 'false'
-
-    return '{"jsonrpc":"2.0", "method":"%s", "params":["%s", %s, %s], "id":"1"}' \
-        % (method, config.get('ApiKey'), json.dumps(record), update)
-
-
 def _do_request(payload):
     kimai_url = config.get('KimaiUrl')
     response = requests.post('{}/core/json.php'.format(kimai_url), data=payload)
