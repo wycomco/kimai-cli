@@ -254,6 +254,8 @@ def get_current_record():
     if not current:
         return
 
+    current['comment'] = config.get('Comment')
+
     print_table([current], columns=[
         'timeEntryID',
         'start_time',
