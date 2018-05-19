@@ -199,14 +199,15 @@ def get_current():
 def get_todays_records():
     """Returns all records for the current day"""
 
-    payload = _build_payload(
+    payload = RequestPayload(
         'getTimesheet',
-        config.get('ApiKey'),
-        dates.parse('today at 00:00').isoformat(),
-        dates.parse('today at 23:59:59').isoformat()
+        params=[
+            RequestParameter(dates.parse('today at 00:00').isoformat()),
+            RequestParameter(dates.parse('today at 23:59:59').isoformat()),
+        ]
     )
 
-    response = _do_request(payload)
+    response = _do_request(payload.build())
 
     return [create_record(r) for r in response.items]
 
