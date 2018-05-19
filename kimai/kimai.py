@@ -147,7 +147,7 @@ def start_recording(task_id, project_id):
 
     if response.successful:
         current = get_current()
-        config.set('CurrentEntry', current['timeEntryID'])
+        config.set('CurrentEntry', current.id)
 
     return response
 
