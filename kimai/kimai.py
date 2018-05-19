@@ -259,19 +259,20 @@ def comment_on_record(record_id, comment):
     if not record:
         return
 
-    record.comment = comment
+    payload = RequestPayload('setTimesheetRecord', params=[
+        RequestParameter({
+            'id': record.id,
+            'start': record.start.isoformat(),
+            'end': record.end.isoformat(),
+            'projectId': record.project.id,
+            'taskId': record.task.id,
+            'statusId': 1,
+            'comment': comment
+        }, quoted=False),
+        RequestParameter(True),  # Update the record
+    ])
 
-    payload = _build_record_payload('setTimesheetRecord', {
-        'id': record.timeEntryID,
-        'start': record.start.isoformat(),
-        'end': record.end.isoformat(),
-        'projectId': record.projectID,
-        'taskId': record.activityID,
-        'statusId': 1,
-        'comment': comment
-    }, update=True)
-
-    response = _do_request(payload)
+    response = _do_request(payload.build())
 
 
 def delete_record(id):
