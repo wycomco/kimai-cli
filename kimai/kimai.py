@@ -9,6 +9,50 @@ from . import dates, config
 from .models import create_record
 
 
+class RequestParameter(object):
+    def __init__(self, value, quoted=True):
+        self.quoted = quoted
+        self.value = value
+
+    def build(self):
+        value = self.value
+
+        if type(self.value) == bool:
+            # Convert a python boolean into something the Kimai API can process
+            value = 'false' if not value else 'true'
+        elif type(self.value) == dict:
+            value = json.dumps(self.value)
+
+        if self.quoted:
+            return '\"%s\"' % value
+
+        return value
+
+    def __repr__(self):
+        return self.build()
+
+
+class RequestPayload(object):
+
+    def __init__(self, action, requires_auth=True, params=None):
+        self.action = action
+        self.api_key = None if not requires_auth else config.get('ApiKey')
+        self.params = [] if not params else params
+
+    def build(self):
+        params = [p.build() for p in self.params]
+
+        # Prepend api key to parameters if it exists
+        if self.api_key:
+            params = ['"%s"' % self.api_key] + params
+
+        return '{"jsonrpc":"2.0", "method": "%s", "params": [%s], "id": 1}' \
+               % (self.action, ','.join(params))
+
+    def __repr__(self):
+        return self.build()
+
+
 def _build_payload(method, *args):
     quoted_args = ['\"%s\"' % arg for arg in args]
     return '{"jsonrpc":"2.0", "method":"%s", "params":[%s], "id":"1"}' \
