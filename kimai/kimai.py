@@ -108,8 +108,15 @@ def authorize_user(record_id):
 def authenticate(username, password):
     """Authenticate a user against the kimai backend."""
 
-    payload = _build_payload('authenticate', username, password)
-    response = requests.post('{}/core/json.php'.format(config.get('KimaiUrl')), data=payload)
+    payload = RequestPayload(
+        'authenticate',
+        requires_auth=False,
+        params=[
+            RequestParameter(username),
+            RequestParameter(password),
+        ]
+    )
+    response = requests.post('{}/core/json.php'.format(config.get('KimaiUrl')), data=payload.build())
 
     return KimaiAuthResponse(response)
 
