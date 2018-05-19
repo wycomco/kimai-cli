@@ -10,6 +10,7 @@ from fuzzyfinder import fuzzyfinder
 
 from . import config, kimai, dates
 from . import favorites as fav
+from .models import Record
 
 
 def print_success(message):
@@ -288,18 +289,9 @@ def get_current_record():
     if not current:
         return
 
-    current['comment'] = config.get('Comment')
+    current.comment = config.get('Comment')
 
-    print_table([current], columns=[
-        'timeEntryID',
-        'start_time',
-        'end_time',
-        'duration',
-        'customerName',
-        'projectName',
-        'activityName',
-        'comment',
-    ])
+    print_records([current])
 
 
 @record.command('get-today')
@@ -309,19 +301,10 @@ def get_today():
 
     total = datetime.timedelta()
     for r in records:
-        total += r['timedelta']
+        total += r.duration
     total = ':'.join(str(total).split(':')[:2])
 
-    print_table(records, columns=[
-        'timeEntryID',
-        'start_time',
-        'end_time',
-        'duration',
-        'customerName',
-        'projectName',
-        'activityName',
-        'comment',
-    ])
+    print_records(records)
 
     click.echo(click.style('Total: ', fg='green', bold=True) + total + 'h')
 

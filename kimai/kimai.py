@@ -7,6 +7,7 @@ from functools import lru_cache
 from datetime import datetime
 
 from . import dates, config
+from .models import create_record
 
 
 def _build_payload(method, *args):
@@ -55,9 +56,9 @@ def authorize_user(record_id):
     if not user_records:
         raise RuntimeError('You are not authorized to edit this record')
 
-    current_user_item = Record(user_records[0])
+    current_user_item = create_record(user_records[0])
 
-    if not str(record.userID) == str(current_user_item.userID):
+    if not record.user_id == current_user_item.user_id:
         raise RuntimeError('You are not authorized to edit this record')
 
 
@@ -148,19 +149,22 @@ def get_current():
     if timesheet[0]['end'] != '0':
         return
 
-    return Record(timesheet[0])
+    return create_record(timesheet[0])
 
 
 def get_todays_records():
     """Returns all records for the current day"""
+
     payload = _build_payload(
         'getTimesheet',
         config.get('ApiKey'),
         dates.parse('today at 00:00').isoformat(),
         dates.parse('today at 23:59:59').isoformat()
     )
+
     response = _do_request(payload)
-    return [Record(r) for r in response.items]
+
+    return [create_record(r) for r in response.items]
 
 
 def get_timesheet():
@@ -171,13 +175,14 @@ def get_timesheet():
     return response.items
 
 
-def get_single_record(id):
+def get_single_record(record_id):
     """Retrieves a single record from Kimai"""
-    payload = _build_payload('getTimesheetRecord', config.get('ApiKey'), id)
+
+    payload = _build_payload('getTimesheetRecord', config.get('ApiKey'), record_id)
     response = _do_request(payload)
 
     if response.successful:
-        return Record(response.items[0])
+        return create_record(response.items[0])
 
 
 def add_record(start, end, project, task, comment=''):
@@ -254,35 +259,3 @@ class KimaiAuthResponse(KimaiResponse):
         if not self.successful:
             return None
         return self.items[0]['apiKey']
-
-
-class Record(dict):
-    """A single time tracking entry."""
-
-    def __init__(self, seq, **kwargs):
-        super().__init__(seq, **kwargs)
-
-        self['start'] = datetime.fromtimestamp(int(self['start']))
-        self['start_time'] = self['start'].strftime('%H:%M:%S')
-
-        if int(self['end']) == 0:
-            self['end'] = None
-            self['end_time'] = None
-        else:
-            self['end'] = datetime.fromtimestamp(int(self['end']))
-            self['end_time'] = self['end'].strftime('%H:%M:%S')
-
-        self._calculate_duration()
-
-    def _calculate_duration(self):
-        if self['end'] is None:
-            duration = (datetime.now() - self['start'])
-        else:
-            duration = (self['end'] - self['start'])
-
-        self['timedelta'] = duration
-        self['duration'] = ':'.join(str(duration).split(':')[:3])
-
-    def __getattr__(self, attr):
-        return self[attr]
-
