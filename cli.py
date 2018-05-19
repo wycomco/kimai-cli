@@ -350,7 +350,7 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
 
 
 @record.command('delete')
-@click.option('--id', '-i', prompt='Entry Id', type=int, multiple=True)
+@click.option('--id', '-i', required=True, type=int, multiple=True)
 def delete_record(id):
     for record_id in id:
         try:
