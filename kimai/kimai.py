@@ -63,25 +63,32 @@ def authorize_user(record_id):
 
 def authenticate(username, password):
     """Authenticate a user against the kimai backend."""
+
     payload = _build_payload('authenticate', username, password)
     response = requests.post('{}/core/json.php'.format(config.get('KimaiUrl')), data=payload)
+
     return KimaiAuthResponse(response)
 
 
 def get_projects():
     """Return a list of all available projects."""
+
     payload = _build_payload('getProjects', config.get('ApiKey'))
+
     return _do_request(payload).items
 
 
 def get_tasks():
     """Return a list of all available tasks."""
+
     payload = _build_payload('getTasks', config.get('ApiKey'))
+
     return _do_request(payload).items
 
 
 def start_recording(task_id, project_id):
     """Starts a new recording for the provided task and project."""
+
     payload = _build_payload(
         'startRecord',
         config.get('ApiKey'),
@@ -100,6 +107,7 @@ def start_recording(task_id, project_id):
 
 def stop_recording():
     """Stops the running record if there is one."""
+
     time_entry_id = config.get('CurrentEntry')
 
     if time_entry_id is not None:
@@ -131,6 +139,7 @@ def stop_recording():
 
 def get_current():
     """Returns the currently running record if there is any."""
+
     timesheet = get_timesheet()
 
     if not timesheet:
@@ -155,7 +164,8 @@ def get_todays_records():
 
 
 def get_timesheet():
-    """Returns all timesheets for a user"""
+    """Returns all time sheets for a user"""
+
     payload = _build_payload('getTimesheet', config.get('ApiKey'))
     response = _do_request(payload)
     return response.items
