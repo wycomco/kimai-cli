@@ -53,12 +53,6 @@ class RequestPayload(object):
         return self.build()
 
 
-def _build_payload(method, *args):
-    quoted_args = ['\"%s\"' % arg for arg in args]
-    return '{"jsonrpc":"2.0", "method":"%s", "params":[%s], "id":"1"}' \
-        % (method, ','.join(quoted_args))
-
-
 def _do_request(payload):
     kimai_url = config.get('KimaiUrl')
     response = requests.post('{}/core/json.php'.format(kimai_url), data=payload)
