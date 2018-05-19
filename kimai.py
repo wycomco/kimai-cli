@@ -175,6 +175,29 @@ def add_record(start, end, project, task, comment=''):
     return _do_request(payload)
 
 
+def comment_on_record(record_id, comment):
+    authorize_user(record_id)
+
+    record = get_single_record(record_id)
+
+    if not record:
+        return
+
+    record.comment = comment
+
+    payload = _build_record_payload('setTimesheetRecord', {
+        'id': record.timeEntryID,
+        'start': record.start.isoformat(),
+        'end': record.end.isoformat(),
+        'projectId': record.projectID,
+        'taskId': record.activityID,
+        'statusId': 1,
+        'comment': comment
+    }, update=True)
+
+    response = _do_request(payload)
+
+
 def delete_record(id):
     """Delete a record by its id. You can only delete your own records."""
     authorize_user(id)
