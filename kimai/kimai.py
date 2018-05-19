@@ -240,15 +240,19 @@ def get_single_record(record_id):
 
 def add_record(start, end, project, task, comment=''):
     """Add a new record to Kimai"""
-    payload = _build_record_payload('setTimesheetRecord', {
+
+    record_param = RequestParameter({
         'start': start.isoformat(),
         'end': end.isoformat(),
         'projectId': project,
         'taskId': task,
         'statusId': 1,
         'comment': comment
-    })
-    return _do_request(payload)
+    }, quoted=False)
+
+    payload = RequestPayload('setTimesheetRecord', params=[record_param])
+
+    return _do_request(payload.build())
 
 
 def comment_on_record(record_id, comment):
