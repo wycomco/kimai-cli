@@ -136,14 +136,15 @@ def get_tasks():
 def start_recording(task_id, project_id):
     """Starts a new recording for the provided task and project."""
 
-    payload = _build_payload(
+    payload = RequestPayload(
         'startRecord',
-        config.get('ApiKey'),
-        project_id,
-        task_id
+        params=[
+            RequestParameter(project_id),
+            RequestParameter(task_id),
+        ]
     )
 
-    response = _do_request(payload)
+    response = _do_request(payload.build())
 
     if response.successful:
         current = get_current()
