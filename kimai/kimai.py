@@ -4,7 +4,6 @@ import requests
 import json
 
 from functools import lru_cache
-from datetime import datetime
 
 from . import dates, config
 from .models import create_record
