@@ -49,6 +49,7 @@ def prompt_with_autocomplete(prompt_title, collection_name, resolve_title=True):
 
 
 @click.group()
+@click.version_option()
 def cli():
     pass
 
