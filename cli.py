@@ -87,10 +87,11 @@ def stop(ctx):
 @click.option('--task-id', '-t', type=int)
 @click.option('--project-id', '-p', type=int)
 @click.option('--favorite', '-f', type=str)
+@click.option('--comment', '-c', type=str)
 @click.pass_context
-def start(ctx, task_id, project_id, favorite):
+def start(ctx, task_id, project_id, favorite, comment):
     """Start a new record"""
-    ctx.invoke(start_record, task_id=task_id, project_id=project_id, favorite=favorite)
+    ctx.invoke(start_record, task_id=task_id, project_id=project_id, favorite=favorite, comment=comment)
 
 
 @cli.command('comment')
