@@ -1,5 +1,5 @@
-from datetime import datetime
 import parsedatetime
+from datetime import datetime
 
 
 def parse(expression, relative_date=None):

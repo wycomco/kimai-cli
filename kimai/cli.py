@@ -1,14 +1,13 @@
 import click
 import tabulate
-import kimai
-import config
-import dates
-import favorites as fav
 import datetime
 
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import Completer, Completion
 from fuzzyfinder import fuzzyfinder
+
+from . import config, kimai, dates
+from . import favorites as fav
 
 
 def print_success(message):

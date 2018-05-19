@@ -1,9 +1,10 @@
 import requests
 import json
-import config
-import dates
+
 from functools import lru_cache
 from datetime import datetime
+
+from . import dates, config
 
 
 def _build_payload(method, *args):

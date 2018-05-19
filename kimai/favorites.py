@@ -1,4 +1,4 @@
-import config
+from . import config
 
 
 def list_favorites():
