@@ -117,6 +117,11 @@ def stop_recording():
 
     if response.successful:
         config.delete('CurrentEntry')
+        comment = config.get('Comment')
+
+        if comment:
+            comment_on_record(time_entry_id, comment)
+            config.delete('Comment')
 
     return response
 
