@@ -164,8 +164,7 @@ def tasks(ctx):
     """Display and download tasks from Kimai"""
     if config.get('ApiKey') is None:
         print_error(
-            '''kimai-cli has not yet been configured. Use \'kimai configure\'
-            first before using any other command'''
+            'kimai-cli has not yet been configured. Use \'kimai configure\' first before using any other command'
         )
         ctx.abort()
 
