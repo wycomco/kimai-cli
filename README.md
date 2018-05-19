@@ -9,7 +9,7 @@
 You can install `kimai-cli` through Homebrew.
 
 ```bash
-brew tap ksassnowski/kimai-cli
+brew tap wycomco/kimai-cli
 brew install kimai-cli
 ```
 
