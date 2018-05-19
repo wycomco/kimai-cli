@@ -348,8 +348,21 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
 
 
 @record.command('delete')
-@click.option('--id', '-i', prompt='Entry Id', type=int)
+@click.option('--id', '-i', prompt='Entry Id', type=int, multiple=True)
 def delete_record(id):
+    for record_id in id:
+        try:
+            response = kimai.delete_record(record_id)
+        except RuntimeError as e:
+            print_error(str(e))
+            continue
+
+        if not response.successful:
+            print_error(response.error)
+        else:
+            print_success('Record %s successfully deleted' % record_id)
+
+
     try:
         response = kimai.delete_record(id)
     except RuntimeError as e:
