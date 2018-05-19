@@ -31,7 +31,7 @@ class Project(object):
 
 class Task(object):
     def __init__(self, task_id, name):
-        self.task_id = task_id
+        self.id = task_id
         self.name = name
 
     def __str__(self):
@@ -40,8 +40,8 @@ class Task(object):
 
 class Customer(object):
     def __init__(self, customer_id, name):
+        self.id = customer_id
         self.name = name
-        self.customer_id = customer_id
 
     def __str__(self):
         return self.name
