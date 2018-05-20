@@ -134,7 +134,9 @@ def start(ctx, task_id, project_id, favorite, comment):
 
 
 @cli.command('comment')
-def comment():
+@click.option('--comment', '-c',
+              type=str, help='Providing a comment through this option overrides any existing comment')
+def comment(comment):
     """Comment on the currently running record"""
     record_id = config.get('CurrentEntry')
 
@@ -142,10 +144,11 @@ def comment():
         print_error('No record currently running')
         return
 
-    current_comment = config.get('Comment')
-    new_comment = click.edit(current_comment)
+    if not comment:
+        current_comment = config.get('Comment')
+        comment = click.edit(current_comment)
 
-    config.set('Comment', new_comment)
+    config.set('Comment', comment)
 
 
 @cli.command('get-current')
