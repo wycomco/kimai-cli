@@ -111,7 +111,7 @@ def authenticate(username, password):
             RequestParameter(password),
         ]
     )
-    response = requests.post('{}/core/json.php'.format(config.get('KimaiUrl')), data=payload)
+    response = requests.post('{}/core/json.php'.format(config.get('KimaiUrl')), data=payload.build())
 
     return KimaiAuthResponse(response)
 
@@ -119,13 +119,13 @@ def authenticate(username, password):
 def get_projects():
     """Return a list of all available projects."""
 
-    return send_request(RequestPayload('getProjects').build()).items
+    return send_request(RequestPayload('getProjects')).items
 
 
 def get_tasks():
     """Return a list of all available tasks."""
 
-    return send_request(RequestPayload('getTasks').build()).items
+    return send_request(RequestPayload('getTasks')).items
 
 
 def start_recording(task_id, project_id):
