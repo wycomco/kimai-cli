@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import atexit
 import click
 import tabulate
 import datetime
@@ -8,9 +9,13 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion import Completer, Completion
 from fuzzyfinder import fuzzyfinder
 
-from . import config, kimai, dates
+from . import kimai, dates
 from . import favorites as fav
 from .models import Record
+from .config import config, flush_config
+
+# Ensure that the config gets flushed at the end of each execution.
+atexit.register(flush_config, config)
 
 
 def print_success(message):

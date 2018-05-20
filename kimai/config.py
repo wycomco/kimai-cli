@@ -1,62 +1,53 @@
 # -*- coding: utf-8 -*-
 
 import os
-import errno
 import yaml
 
 
-CONFIG_FOLDER = os.path.expanduser('~/.kimai')
-CONFIG_PATH = os.path.join(CONFIG_FOLDER, 'config')
+DEFAULT_CONFIG_PATH = os.path.join(os.path.expanduser('~/.kimai'), 'config')
 
 
-def _get_config():
-    if not os.path.exists(CONFIG_PATH):
-        return {}
+class Config(object):
+    def __init__(self, values=None):
+        self.values = {} if values is None else values
 
-    with open(CONFIG_PATH, 'r') as file:
-        return yaml.load(file)
+    def get(self, key: str, default=None):
+        if key in self.values:
+            return self.values[key]
 
-
-def write(attributes):
-    """Replaces the existing config with the provided attributes."""
-    try:
-        os.makedirs(CONFIG_FOLDER)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-
-    with open(CONFIG_PATH, 'w') as outfile:
-        yaml.dump(attributes, outfile, default_flow_style=False)
-
-
-def set(key, value):
-    """Sets a single value in the config, overriding it if it
-    already existed."""
-    config = _get_config()
-    config[key] = value
-    write(config)
-
-
-def merge(attributes):
-    """Merges the existing config with the provided attributes
-    overriding any values that already exist."""
-    config = _get_config()
-    write({**config, **attributes})
-
-
-def get(key, default=None):
-    """Retrieves a value from the config, returning the default
-    if the key does not exist"""
-    config = _get_config()
-
-    if key not in config:
         return default
 
-    return config[key]
+    def set(self, key: str, value):
+        self.values[key] = value
+
+    def delete(self, key):
+        del self.values[key]
+
+    def __repr__(self):
+        return self.values
 
 
-def delete(key):
-    """Removes a key from the config"""
-    config = _get_config()
-    del config[key]
-    write(config)
+def config_path():
+    return os.environ.get('KIMAI_CONFIG_PATH', DEFAULT_CONFIG_PATH)
+
+
+def load_config():
+    """Loads the config values from the configured path and returns
+    a config object."""
+    if not os.path.exists(config_path()):
+        conf = Config()
+    else:
+        with open(config_path(), 'r') as file:
+            conf = Config(yaml.load(file))
+    return conf
+
+
+def flush_config(config: Config):
+    """Write the contents of the given config to disk."""
+    os.makedirs(os.path.dirname(config_path()), exist_ok=True)
+
+    with open(DEFAULT_CONFIG_PATH, 'w') as outfile:
+        yaml.dump(config.values, outfile, default_flow_style=False)
+
+
+config = load_config()

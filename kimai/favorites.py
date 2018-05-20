@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from . import config
+from .config import config
 
 
 def list_favorites():

@@ -5,7 +5,8 @@ import json
 
 from functools import lru_cache
 
-from . import dates, config
+from . import dates
+from .config import config
 from .models import create_record
 
 
