@@ -244,28 +244,41 @@ def add_record(start, end, project, task, comment=''):
     return send_request(payload)
 
 
-def comment_on_record(record_id, comment):
+def edit_record(record_id, start=None, end=None, comment=None):
     authorize_user(record_id)
 
     record = get_single_record(record_id)
 
     if not record:
-        return
+        raise KeyError('No entry exists for id %s' % record_id)
 
-    payload = RequestPayload('setTimesheetRecord', params=[
-        RequestParameter({
-            'id': record.id,
-            'start': record.start.isoformat(),
-            'end': record.end.isoformat(),
-            'projectId': record.project.id,
-            'taskId': record.task.id,
-            'statusId': 1,
-            'comment': comment
-        }, quoted=False),
-        RequestParameter(True),  # Update the record
-    ])
+    start = record.start if start is None else start
+    end = record.end if end is None else end
+    comment = record.comment if comment is None else comment
 
-    response = send_request(payload)
+    record_param = RequestParameter({
+        'id': record_id,
+        'start': start.isoformat(),
+        'end': end.isoformat(),
+        'projectId': record.project.id,
+        'taskId': record.task.id,
+        'statusId': 1,
+        'comment': comment
+    }, quoted=False)
+
+    payload = RequestPayload(
+        'setTimesheetRecord',
+        params=[
+            record_param,
+            RequestParameter(True)  # Update the record
+        ]
+    )
+
+    return send_request(payload)
+
+
+def comment_on_record(record_id, comment):
+    return edit_record(record_id, comment=comment)
 
 
 def delete_record(id):
