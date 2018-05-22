@@ -80,22 +80,12 @@ def authorize_user(record_id):
     # direct way of retrieving the current user's id, we have to help ourselves by
     # simply retrieving any record using the saved API key and compare the returned
     # record's user id with the user id of the record we're trying to operate on.
-    payload = RequestPayload(
-        'getTimesheet',
-        params=[
-            RequestParameter(0),   # No particular start date
-            RequestParameter(0),   # No particular end date
-            RequestParameter(-1),  # Whatever this one is
-            RequestParameter(0),   # No particular starting id
-            RequestParameter(1)    # Limit to one record
-        ]
-    )
-    user_records = send_request(payload).items
+    user_records = get_timesheet(limit=1)
 
     if not user_records:
         raise RuntimeError('You are not authorized to edit this record')
 
-    current_user_item = create_record(user_records[0])
+    current_user_item = user_records[0]
 
     if not record.user_id == current_user_item.user_id:
         raise RuntimeError('You are not authorized to edit this record')
@@ -189,39 +179,39 @@ def stop_recording():
 def get_current():
     """Returns the currently running record if there is any."""
 
-    timesheet = get_timesheet()
+    timesheet = get_timesheet(limit=1)
     if not timesheet:
         return
 
-    if timesheet[0]['end'] != '0':
+    record = timesheet[0]
+
+    if record.end:
         return
 
-    return create_record(timesheet[0])
+    return record
 
 
 def get_todays_records():
     """Returns all records for the current day"""
-
-    payload = RequestPayload(
-        'getTimesheet',
-        params=[
-            RequestParameter(dates.parse('today at 00:00').isoformat()),
-            RequestParameter(dates.parse('today at 23:59:59').isoformat()),
-        ]
+    return get_timesheet(
+        dates.parse('today at 00:00').isoformat(),
+        dates.parse('today at 23:59:59').isoformat()
     )
 
+
+def get_timesheet(start_date=0, end_date=0, limit=0):
+    """Returns all time sheets for a user"""
+
+    payload = RequestPayload('getTimesheet', params=[
+        RequestParameter(start_date),  # Time of first entry to fetch
+        RequestParameter(end_date),    # Time of last entry to fetch
+        RequestParameter(-1),          # Whatever this one is
+        RequestParameter(0),           # No particular starting id
+        RequestParameter(limit)        # How many records to fetch
+    ])
     response = send_request(payload)
 
     return [create_record(r) for r in response.items]
-
-
-def get_timesheet():
-    """Returns all time sheets for a user"""
-
-    payload = RequestPayload('getTimesheet')
-    response = send_request(payload)
-
-    return response.items
 
 
 def get_single_record(record_id):
