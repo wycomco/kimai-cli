@@ -1,14 +1,21 @@
+# -*- coding: utf-8 -*-
+
+import atexit
 import click
 import tabulate
-import kimai
-import config
-import dates
-import favorites as fav
 import datetime
 
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import Completer, Completion
 from fuzzyfinder import fuzzyfinder
+
+from . import kimai, dates
+from . import favorites as fav
+from .models import Record
+from .config import config, flush_config
+
+# Ensure that the config gets flushed at the end of each execution.
+atexit.register(flush_config, config)
 
 
 def print_success(message):
@@ -23,9 +30,40 @@ def print_error(message):
 
 def print_table(rows, columns=None):
     """Print a table to the console."""
+
     if columns is not None:
         rows = map(lambda r: {k: r[k] for k in columns if k in r}, rows)
+
     click.echo(tabulate.tabulate(rows, headers='keys', tablefmt="grid"))
+
+
+def print_records(records):
+    """Prints a list of record as a table"""
+
+    def extract_record_row(record: Record):
+        if record.end:
+            end = record.end.strftime('%H:%M:%S')
+        else:
+            end = '-'
+
+        duration = ':'.join(str(record.duration).split(':')[:2])
+
+        return [
+            record.id,
+            record.start.strftime('%H:%M:%S'),
+            end,
+            duration,
+            record.customer,
+            record.project,
+            record.task,
+            record.comment
+        ]
+
+    headers = ['Id', 'Start Time', 'End Time', 'Duration', 'Customer', 'Project', 'Task', 'Comment']
+    rows = [extract_record_row(r) for r in records]
+
+    table = tabulate.tabulate(rows, headers, tablefmt="grid")
+    click.echo(table)
 
 
 def prompt_with_autocomplete(prompt_title, collection_name, resolve_title=True):
@@ -69,7 +107,7 @@ def configure(ctx, kimai_url, username, password):
         print_error('Authentication failed.')
         return
 
-    config.set('ApiKey', r.apiKey)
+    config.set('ApiKey', r.api_key)
 
     ctx.invoke(download_projects)
     ctx.invoke(download_tasks)
@@ -96,7 +134,9 @@ def start(ctx, task_id, project_id, favorite, comment):
 
 
 @cli.command('comment')
-def comment():
+@click.option('--comment', '-c',
+              type=str, help='Providing a comment through this option overrides any existing comment')
+def comment(comment):
     """Comment on the currently running record"""
     record_id = config.get('CurrentEntry')
 
@@ -104,10 +144,11 @@ def comment():
         print_error('No record currently running')
         return
 
-    current_comment = config.get('Comment')
-    new_comment = click.edit(current_comment)
+    if not comment:
+        current_comment = config.get('Comment')
+        comment = click.edit(current_comment)
 
-    config.set('Comment', new_comment)
+    config.set('Comment', comment)
 
 
 @cli.command('get-current')
@@ -154,7 +195,8 @@ def download_projects():
     project_map = {}
 
     for project in remote_projects:
-        project_map[project['name']] = project['projectID']
+        map_key = "(%s) %s" % (project['customerName'], project['name'])
+        project_map[map_key] = project['projectID']
 
     config.set('Projects', project_map)
     print_success('Successfully downloaded projects.')
@@ -256,18 +298,9 @@ def get_current_record():
     if not current:
         return
 
-    current['comment'] = config.get('Comment')
+    current.comment = config.get('Comment')
 
-    print_table([current], columns=[
-        'timeEntryID',
-        'start_time',
-        'end_time',
-        'duration',
-        'customerName',
-        'projectName',
-        'activityName',
-        'comment',
-    ])
+    print_records([current])
 
 
 @record.command('get-today')
@@ -277,32 +310,24 @@ def get_today():
 
     total = datetime.timedelta()
     for r in records:
-        total += r['timedelta']
+        total += r.duration
     total = ':'.join(str(total).split(':')[:2])
 
-    print_table(records, columns=[
-        'timeEntryID',
-        'start_time',
-        'end_time',
-        'duration',
-        'customerName',
-        'projectName',
-        'activityName',
-        'comment',
-    ])
+    print_records(records)
 
     click.echo(click.style('Total: ', fg='green', bold=True) + total + 'h')
 
 
 @record.command('add')
-@click.option('--start-time', '-s', prompt="Start Time", type=str)
+@click.option('--start-time', '-s', type=str)
 @click.option('--end-time', '-e', type=str)
+@click.option('--last-entry-id', '-l', type=int, help='ID of the last entry this record should snap to')
 @click.option('--duration', '-d', type=str)
 @click.option('--project-id', '-p', type=int)
 @click.option('--task-id', '-t', type=int)
 @click.option('--favorite', '-f', type=str)
 @click.option('--comment', '-c', default='', type=str)
-def add_record(start_time, end_time, duration, favorite, project_id, task_id, comment):
+def add_record(start_time, end_time, last_entry_id, duration, favorite, project_id, task_id, comment):
     if not end_time and not duration:
         print_error('Need either an end time or a duration.')
         return
@@ -310,7 +335,23 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
     if not favorite and not (project_id and task_id):
         favorite = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
 
-    start_time = dates.parse(start_time)
+    if not last_entry_id or start_time:
+        print_error('Need either a start time or the id of the previous record.')
+        return
+
+    # If the id of the last record was provided, we assume that the start time of
+    # this entry should be equal to the end time of the last entry. This allows
+    # the user to "snap" entries together to easily fill gaps in the timesheet.
+    if last_entry_id:
+        last_entry = kimai.get_single_record(last_entry_id)
+
+        if not last_entry:
+            print_error('No record exists for id %s' % last_entry_id)
+            return
+        
+        start_time = last_entry.end
+    else:
+        start_time = dates.parse(start_time)
 
     if start_time is None:
         print_error('Could not parse start date')
@@ -347,6 +388,51 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
         task_id,
         comment=comment
     )
+
+
+@record.command('edit')
+@click.option('--id', '-i', prompt="Record Id", type=int)
+@click.option('--start-time', '-s', type=str)
+@click.option('--end-time', '-e', type=str)
+@click.option('--last-entry-id', '-l', type=int, help='ID of the last entry this record should snap to')
+@click.option('--project-id', '-p', type=int)
+@click.option('--task-id', '-t', type=int)
+@click.option('--favorite', '-f', type=str)
+@click.option('--comment', '-c', type=str)
+def edit_record(id, start_time, end_time, last_entry_id, project_id, task_id, favorite, comment):
+    """Edit a record"""
+    if last_entry_id:
+        try:
+            last_entry = kimai.get_single_record(last_entry_id)
+            start_time = last_entry.end
+        except KeyError as e:
+            print_error(str(e))
+            return
+    elif start_time:
+        start_time = dates.parse(start_time)
+
+    if end_time:
+        end_time = dates.parse(end_time)
+
+    if favorite:
+        try:
+            favorite = fav.get_favorite(favorite)
+            project_id = favorite.Project
+            task_id = favorite.Task
+        except KeyError as e:
+            print_error(str(e))
+            return
+
+    kimai.edit_record(
+        id,
+        start=start_time,
+        end=end_time,
+        task_id=task_id,
+        project_id=project_id,
+        comment=comment
+    )
+
+    print_success('Successfully updated record %s' % id)
 
 
 @record.command('delete')

@@ -1,5 +1,8 @@
-from datetime import datetime
+# -*- coding: utf-8 -*-
+
 import parsedatetime
+
+from datetime import datetime
 
 
 def parse(expression, relative_date=None):

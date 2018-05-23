@@ -1,4 +1,6 @@
-import config
+# -*- coding: utf-8 -*-
+
+from .config import config
 
 
 def list_favorites():
@@ -13,7 +15,7 @@ def get_favorite(name):
     favorites = config.get('Favorites')
 
     if name not in favorites:
-        raise RuntimeError('No favorite for name \'%s\' exists' % name)
+        raise KeyError('No favorite for name \'%s\' exists' % name)
 
     favorite = favorites[name]
     return Favorite(name, favorite['Project'], favorite['Task'])
