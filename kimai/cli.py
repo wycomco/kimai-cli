@@ -319,14 +319,15 @@ def get_today():
 
 
 @record.command('add')
-@click.option('--start-time', '-s', prompt="Start Time", type=str)
+@click.option('--start-time', '-s', type=str)
 @click.option('--end-time', '-e', type=str)
+@click.option('--last-entry-id', '-l', type=int, help='ID of the last entry this record should snap to')
 @click.option('--duration', '-d', type=str)
 @click.option('--project-id', '-p', type=int)
 @click.option('--task-id', '-t', type=int)
 @click.option('--favorite', '-f', type=str)
 @click.option('--comment', '-c', default='', type=str)
-def add_record(start_time, end_time, duration, favorite, project_id, task_id, comment):
+def add_record(start_time, end_time, last_entry_id, duration, favorite, project_id, task_id, comment):
     if not end_time and not duration:
         print_error('Need either an end time or a duration.')
         return
@@ -334,7 +335,23 @@ def add_record(start_time, end_time, duration, favorite, project_id, task_id, co
     if not favorite and not (project_id and task_id):
         favorite = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
 
-    start_time = dates.parse(start_time)
+    if not last_entry_id or start_time:
+        print_error('Need either a start time or the id of the previous record.')
+        return
+
+    # If the id of the last record was provided, we assume that the start time of
+    # this entry should be equal to the end time of the last entry. This allows
+    # the user to "snap" entries together to easily fill gaps in the timesheet.
+    if last_entry_id:
+        last_entry = kimai.get_single_record(last_entry_id)
+
+        if not last_entry:
+            print_error('No record exists for id %s' % last_entry_id)
+            return
+        
+        start_time = last_entry.end
+    else:
+        start_time = dates.parse(start_time)
 
     if start_time is None:
         print_error('Could not parse start date')
