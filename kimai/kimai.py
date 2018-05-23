@@ -3,11 +3,30 @@
 import requests
 import json
 
+from enum import Enum
+from typing import List
 from functools import lru_cache
 
 from . import dates
 from .config import config
 from .models import create_record
+
+
+class RequestAction(Enum):
+    """Represents one of the possible api services the Kimai API supports."""
+
+    AUTHENTICATE = 'authenticate'
+    GET_PROJECTS = 'getProjects'
+    GET_TASKS = 'getTasks'
+    START_RECORD = 'startRecord'
+    STOP_RECORD = 'stopRecord'
+    GET_TIMESHEET = 'getTimesheet'
+    GET_TIMESHEET_RECORD = 'getTimesheetRecord'
+    SET_TIMESHEET_RECORD = 'setTimesheetRecord'
+    REMOVE_TIMESHEET_RECORD = 'removeTimesheetRecord'
+
+    def __str__(self):
+        return self._value_
 
 
 class RequestParameter(object):
@@ -40,7 +59,7 @@ class RequestParameter(object):
 class RequestPayload(object):
     """Represents the string that gets send as the request payload."""
 
-    def __init__(self, action, requires_auth=True, params=None):
+    def __init__(self, action: RequestAction, requires_auth=True, params: List[RequestParameter]=None):
         self.action = action
         self.api_key = None if not requires_auth else config.get('ApiKey')
         self.params = [] if not params else params
@@ -80,22 +99,12 @@ def authorize_user(record_id):
     # direct way of retrieving the current user's id, we have to help ourselves by
     # simply retrieving any record using the saved API key and compare the returned
     # record's user id with the user id of the record we're trying to operate on.
-    payload = RequestPayload(
-        'getTimesheet',
-        params=[
-            RequestParameter(0),   # No particular start date
-            RequestParameter(0),   # No particular end date
-            RequestParameter(-1),  # Whatever this one is
-            RequestParameter(0),   # No particular starting id
-            RequestParameter(1)    # Limit to one record
-        ]
-    )
-    user_records = send_request(payload).items
+    user_records = get_timesheet(limit=1)
 
     if not user_records:
         raise RuntimeError('You are not authorized to edit this record')
 
-    current_user_item = create_record(user_records[0])
+    current_user_item = user_records[0]
 
     if not record.user_id == current_user_item.user_id:
         raise RuntimeError('You are not authorized to edit this record')
@@ -105,7 +114,7 @@ def authenticate(username, password):
     """Authenticate a user against the kimai backend."""
 
     payload = RequestPayload(
-        'authenticate',
+        RequestAction.AUTHENTICATE,
         requires_auth=False,
         params=[
             RequestParameter(username),
@@ -119,21 +128,23 @@ def authenticate(username, password):
 
 def get_projects():
     """Return a list of all available projects."""
-
-    return send_request(RequestPayload('getProjects')).items
+    return send_request(
+        RequestPayload(RequestAction.GET_PROJECTS)
+    ).items
 
 
 def get_tasks():
     """Return a list of all available tasks."""
-
-    return send_request(RequestPayload('getTasks')).items
+    return send_request(
+        RequestPayload(RequestAction.GET_TASKS)
+    ).items
 
 
 def start_recording(task_id, project_id):
     """Starts a new recording for the provided task and project."""
 
     payload = RequestPayload(
-        'startRecord',
+        RequestAction.START_RECORD,
         params=[
             RequestParameter(project_id),
             RequestParameter(task_id),
@@ -163,7 +174,7 @@ def stop_recording():
         time_entry_id = current_record.id
 
     payload = RequestPayload(
-        'stopRecord',
+        RequestAction.STOP_RECORD,
         params=[RequestParameter(time_entry_id)]
     )
 
@@ -189,46 +200,49 @@ def stop_recording():
 def get_current():
     """Returns the currently running record if there is any."""
 
-    timesheet = get_timesheet()
+    timesheet = get_timesheet(limit=1)
     if not timesheet:
         return
 
-    if timesheet[0]['end'] != '0':
+    record = timesheet[0]
+
+    if record.end:
         return
 
-    return create_record(timesheet[0])
+    return record
 
 
 def get_todays_records():
     """Returns all records for the current day"""
-
-    payload = RequestPayload(
-        'getTimesheet',
-        params=[
-            RequestParameter(dates.parse('today at 00:00').isoformat()),
-            RequestParameter(dates.parse('today at 23:59:59').isoformat()),
-        ]
+    return get_timesheet(
+        dates.parse('today at 00:00').isoformat(),
+        dates.parse('today at 23:59:59').isoformat()
     )
 
+
+def get_timesheet(start_date=0, end_date=0, limit=0):
+    """Returns all time sheets for a user"""
+
+    payload = RequestPayload(
+        RequestAction.GET_TIMESHEET,
+        params=[
+            RequestParameter(start_date),  # Time of first entry to fetch
+            RequestParameter(end_date),    # Time of last entry to fetch
+            RequestParameter(-1),          # Whatever this one is
+            RequestParameter(0),           # No particular starting id
+            RequestParameter(limit)        # How many records to fetch
+        ]
+    )
     response = send_request(payload)
 
     return [create_record(r) for r in response.items]
-
-
-def get_timesheet():
-    """Returns all time sheets for a user"""
-
-    payload = RequestPayload('getTimesheet')
-    response = send_request(payload)
-
-    return response.items
 
 
 def get_single_record(record_id):
     """Retrieves a single record from Kimai"""
 
     payload = RequestPayload(
-        'getTimesheetRecord',
+        RequestAction.GET_TIMESHEET_RECORD,
         params=[RequestParameter(record_id)]
     )
     response = send_request(payload)
@@ -249,39 +263,52 @@ def add_record(start, end, project, task, comment=''):
         'comment': comment
     }, quoted=False)
 
-    payload = RequestPayload('setTimesheetRecord', params=[record_param])
+    payload = RequestPayload(RequestAction.SET_TIMESHEET_RECORD, params=[record_param])
 
     return send_request(payload)
 
 
-def comment_on_record(record_id, comment):
+def edit_record(record_id, start=None, end=None, comment=None):
     authorize_user(record_id)
 
     record = get_single_record(record_id)
 
     if not record:
-        return
+        raise KeyError('No entry exists for id %s' % record_id)
 
-    payload = RequestPayload('setTimesheetRecord', params=[
-        RequestParameter({
-            'id': record.id,
-            'start': record.start.isoformat(),
-            'end': record.end.isoformat(),
-            'projectId': record.project.id,
-            'taskId': record.task.id,
-            'statusId': 1,
-            'comment': comment
-        }, quoted=False),
-        RequestParameter(True),  # Update the record
-    ])
+    start = record.start if start is None else start
+    end = record.end if end is None else end
+    comment = record.comment if comment is None else comment
 
-    response = send_request(payload)
+    record_param = RequestParameter({
+        'id': record_id,
+        'start': start.isoformat(),
+        'end': end.isoformat(),
+        'projectId': record.project.id,
+        'taskId': record.task.id,
+        'statusId': 1,
+        'comment': comment
+    }, quoted=False)
+
+    payload = RequestPayload(
+        RequestAction.SET_TIMESHEET_RECORD,
+        params=[
+            record_param,
+            RequestParameter(True)  # Update the record
+        ]
+    )
+
+    return send_request(payload)
+
+
+def comment_on_record(record_id, comment):
+    return edit_record(record_id, comment=comment)
 
 
 def delete_record(id):
     """Delete a record by its id. You can only delete your own records."""
     authorize_user(id)
-    payload = RequestPayload('removeTimesheetRecord', params=[RequestParameter(id)])
+    payload = RequestPayload(RequestAction.REMOVE_TIMESHEET_RECORD, params=[RequestParameter(id)])
     return send_request(payload)
 
 
