@@ -390,6 +390,51 @@ def add_record(start_time, end_time, last_entry_id, duration, favorite, project_
     )
 
 
+@record.command('edit')
+@click.option('--id', '-i', prompt="Record Id", type=int)
+@click.option('--start-time', '-s', type=str)
+@click.option('--end-time', '-e', type=str)
+@click.option('--last-entry-id', '-l', type=int, help='ID of the last entry this record should snap to')
+@click.option('--project-id', '-p', type=int)
+@click.option('--task-id', '-t', type=int)
+@click.option('--favorite', '-f', type=str)
+@click.option('--comment', '-c', type=str)
+def edit_record(id, start_time, end_time, last_entry_id, project_id, task_id, favorite, comment):
+    """Edit a record"""
+    if last_entry_id:
+        try:
+            last_entry = kimai.get_single_record(last_entry_id)
+            start_time = last_entry.end
+        except KeyError as e:
+            print_error(str(e))
+            return
+    elif start_time:
+        start_time = dates.parse(start_time)
+
+    if end_time:
+        end_time = dates.parse(end_time)
+
+    if favorite:
+        try:
+            favorite = fav.get_favorite(favorite)
+            project_id = favorite.Project
+            task_id = favorite.Task
+        except KeyError as e:
+            print_error(str(e))
+            return
+
+    kimai.edit_record(
+        id,
+        start=start_time,
+        end=end_time,
+        task_id=task_id,
+        project_id=project_id,
+        comment=comment
+    )
+
+    print_success('Successfully updated record %s' % id)
+
+
 @record.command('delete')
 @click.option('--id', '-i', required=True, type=int, multiple=True)
 def delete_record(id):

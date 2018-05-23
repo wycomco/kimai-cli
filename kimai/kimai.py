@@ -247,8 +247,10 @@ def get_single_record(record_id):
     )
     response = send_request(payload)
 
-    if response.successful:
-        return create_record(response.items[0])
+    if not response.successful:
+        raise KeyError('No record exists for id %s' % record_id)
+
+    return create_record(response.items[0])
 
 
 def add_record(start, end, project, task, comment=''):
@@ -268,7 +270,7 @@ def add_record(start, end, project, task, comment=''):
     return send_request(payload)
 
 
-def edit_record(record_id, start=None, end=None, comment=None):
+def edit_record(record_id, start=None, end=None, comment=None, project_id=None, task_id=None):
     authorize_user(record_id)
 
     record = get_single_record(record_id)
@@ -279,13 +281,15 @@ def edit_record(record_id, start=None, end=None, comment=None):
     start = record.start if start is None else start
     end = record.end if end is None else end
     comment = record.comment if comment is None else comment
+    project_id = record.project.id if project_id is None else project_id
+    task_id = record.task.id if task_id is None else task_id
 
     record_param = RequestParameter({
         'id': record_id,
         'start': start.isoformat(),
         'end': end.isoformat(),
-        'projectId': record.project.id,
-        'taskId': record.task.id,
+        'projectId': project_id,
+        'taskId': task_id,
         'statusId': 1,
         'comment': comment
     }, quoted=False)
