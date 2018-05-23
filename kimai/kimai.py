@@ -3,12 +3,30 @@
 import requests
 import json
 
+from enum import Enum
 from typing import List
 from functools import lru_cache
 
 from . import dates
 from .config import config
 from .models import create_record
+
+
+class RequestAction(Enum):
+    """Represents one of the possible api services the Kimai API supports."""
+
+    AUTHENTICATE = 'authenticate'
+    GET_PROJECTS = 'getProjects'
+    GET_TASKS = 'getTasks'
+    START_RECORD = 'startRecord'
+    STOP_RECORD = 'stopRecord'
+    GET_TIMESHEET = 'getTimesheet'
+    GET_TIMESHEET_RECORD = 'getTimesheetRecord'
+    SET_TIMESHEET_RECORD = 'setTimesheetRecord'
+    REMOVE_TIMESHEET_RECORD = 'removeTimesheetRecord'
+
+    def __str__(self):
+        return self._value_
 
 
 class RequestParameter(object):
@@ -41,7 +59,7 @@ class RequestParameter(object):
 class RequestPayload(object):
     """Represents the string that gets send as the request payload."""
 
-    def __init__(self, action, requires_auth=True, params: List[RequestParameter]=None):
+    def __init__(self, action: RequestAction, requires_auth=True, params: List[RequestParameter]=None):
         self.action = action
         self.api_key = None if not requires_auth else config.get('ApiKey')
         self.params = [] if not params else params
@@ -96,7 +114,7 @@ def authenticate(username, password):
     """Authenticate a user against the kimai backend."""
 
     payload = RequestPayload(
-        'authenticate',
+        RequestAction.AUTHENTICATE,
         requires_auth=False,
         params=[
             RequestParameter(username),
@@ -110,21 +128,23 @@ def authenticate(username, password):
 
 def get_projects():
     """Return a list of all available projects."""
-
-    return send_request(RequestPayload('getProjects')).items
+    return send_request(
+        RequestPayload(RequestAction.GET_PROJECTS)
+    ).items
 
 
 def get_tasks():
     """Return a list of all available tasks."""
-
-    return send_request(RequestPayload('getTasks')).items
+    return send_request(
+        RequestPayload(RequestAction.GET_TASKS)
+    ).items
 
 
 def start_recording(task_id, project_id):
     """Starts a new recording for the provided task and project."""
 
     payload = RequestPayload(
-        'startRecord',
+        RequestAction.START_RECORD,
         params=[
             RequestParameter(project_id),
             RequestParameter(task_id),
@@ -154,7 +174,7 @@ def stop_recording():
         time_entry_id = current_record.id
 
     payload = RequestPayload(
-        'stopRecord',
+        RequestAction.STOP_RECORD,
         params=[RequestParameter(time_entry_id)]
     )
 
@@ -203,13 +223,16 @@ def get_todays_records():
 def get_timesheet(start_date=0, end_date=0, limit=0):
     """Returns all time sheets for a user"""
 
-    payload = RequestPayload('getTimesheet', params=[
-        RequestParameter(start_date),  # Time of first entry to fetch
-        RequestParameter(end_date),    # Time of last entry to fetch
-        RequestParameter(-1),          # Whatever this one is
-        RequestParameter(0),           # No particular starting id
-        RequestParameter(limit)        # How many records to fetch
-    ])
+    payload = RequestPayload(
+        RequestAction.GET_TIMESHEET,
+        params=[
+            RequestParameter(start_date),  # Time of first entry to fetch
+            RequestParameter(end_date),    # Time of last entry to fetch
+            RequestParameter(-1),          # Whatever this one is
+            RequestParameter(0),           # No particular starting id
+            RequestParameter(limit)        # How many records to fetch
+        ]
+    )
     response = send_request(payload)
 
     return [create_record(r) for r in response.items]
@@ -219,7 +242,7 @@ def get_single_record(record_id):
     """Retrieves a single record from Kimai"""
 
     payload = RequestPayload(
-        'getTimesheetRecord',
+        RequestAction.GET_TIMESHEET_RECORD,
         params=[RequestParameter(record_id)]
     )
     response = send_request(payload)
@@ -240,7 +263,7 @@ def add_record(start, end, project, task, comment=''):
         'comment': comment
     }, quoted=False)
 
-    payload = RequestPayload('setTimesheetRecord', params=[record_param])
+    payload = RequestPayload(RequestAction.SET_TIMESHEET_RECORD, params=[record_param])
 
     return send_request(payload)
 
@@ -268,7 +291,7 @@ def edit_record(record_id, start=None, end=None, comment=None):
     }, quoted=False)
 
     payload = RequestPayload(
-        'setTimesheetRecord',
+        RequestAction.SET_TIMESHEET_RECORD,
         params=[
             record_param,
             RequestParameter(True)  # Update the record
@@ -285,7 +308,7 @@ def comment_on_record(record_id, comment):
 def delete_record(id):
     """Delete a record by its id. You can only delete your own records."""
     authorize_user(id)
-    payload = RequestPayload('removeTimesheetRecord', params=[RequestParameter(id)])
+    payload = RequestPayload(RequestAction.REMOVE_TIMESHEET_RECORD, params=[RequestParameter(id)])
     return send_request(payload)
 
 
