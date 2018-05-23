@@ -3,6 +3,7 @@
 import requests
 import json
 
+from typing import List
 from functools import lru_cache
 
 from . import dates
@@ -40,7 +41,7 @@ class RequestParameter(object):
 class RequestPayload(object):
     """Represents the string that gets send as the request payload."""
 
-    def __init__(self, action, requires_auth=True, params=None):
+    def __init__(self, action, requires_auth=True, params: List[RequestParameter]=None):
         self.action = action
         self.api_key = None if not requires_auth else config.get('ApiKey')
         self.params = [] if not params else params
