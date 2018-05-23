@@ -247,8 +247,10 @@ def get_single_record(record_id):
     )
     response = send_request(payload)
 
-    if response.successful:
-        return create_record(response.items[0])
+    if not response.successful:
+        raise KeyError('No record exists for id %s' % record_id)
+
+    return create_record(response.items[0])
 
 
 def add_record(start, end, project, task, comment=''):
