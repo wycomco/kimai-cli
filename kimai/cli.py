@@ -195,7 +195,8 @@ def download_projects():
     project_map = {}
 
     for project in remote_projects:
-        project_map[project['name']] = project['projectID']
+        map_key = "(%s) %s" % (project['customerName'], project['name'])
+        project_map[map_key] = project['projectID']
 
     config.set('Projects', project_map)
     print_success('Successfully downloaded projects.')
