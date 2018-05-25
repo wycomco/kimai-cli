@@ -335,7 +335,7 @@ def add_record(start_time, end_time, last_entry_id, duration, favorite, project_
     if not favorite and not (project_id and task_id):
         favorite = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
 
-    if not last_entry_id or start_time:
+    if not (last_entry_id or start_time):
         print_error('Need either a start time or the id of the previous record.')
         return
 
