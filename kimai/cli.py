@@ -566,6 +566,11 @@ def start_recording_favorite(ctx, name, comment):
     )
 
 
+@cli.group()
+def timesheet():
+    """Display your timesheet for a period"""
+    pass
+
 class FuzzyCompleter(Completer):
     def __init__(self, projects):
         self.projects = projects
