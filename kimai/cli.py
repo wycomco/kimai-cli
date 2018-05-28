@@ -353,7 +353,7 @@ def add_record(start_time, end_time, last_entry_id, duration, favorite, project_
         if not last_entry:
             print_error('No record exists for id %s' % last_entry_id)
             return
-        
+
         start_time = last_entry.end
     else:
         start_time = dates.parse(start_time)
