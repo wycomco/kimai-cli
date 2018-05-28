@@ -323,21 +323,6 @@ def get_current_record():
     print_records([current])
 
 
-@record.command('get-today')
-def get_today():
-    """Returns all recorded entries for today"""
-    records = kimai.get_todays_records()
-
-    total = datetime.timedelta()
-    for r in records:
-        total += r.duration
-    total = ':'.join(str(total).split(':')[:2])
-
-    print_records(records)
-
-    click.echo(click.style('Total: ', fg='green', bold=True) + total + 'h')
-
-
 @record.command('add')
 @click.option('--start-time', '-s', type=str)
 @click.option('--end-time', '-e', type=str)
@@ -570,6 +555,15 @@ def start_recording_favorite(ctx, name, comment):
 def timesheet():
     """Display your timesheet for a period"""
     pass
+
+
+@timesheet.command('today')
+def get_today():
+    """Returns all recorded entries for today"""
+    records = kimai.get_todays_records()
+
+    print_records(records)
+    print_total(records)
 
 class FuzzyCompleter(Completer):
     def __init__(self, projects):
