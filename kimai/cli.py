@@ -565,6 +565,18 @@ def get_today():
     print_records(records)
     print_total(records)
 
+
+@timesheet.command()
+def yesterday():
+    records = kimai.get_timesheet(
+        start_date=dates.parse('beginning of last week'),
+        end_date=dates.parse('yesterday at 23:59:59')
+    )
+
+    print_records(records)
+    print_total(records)
+
+
 class FuzzyCompleter(Completer):
     def __init__(self, projects):
         self.projects = projects
