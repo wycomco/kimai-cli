@@ -4,7 +4,9 @@ import atexit
 import click
 import tabulate
 import datetime
+import itertools
 
+from typing import List
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import Completer, Completion
 from fuzzyfinder import fuzzyfinder
@@ -26,6 +28,24 @@ def print_success(message):
 def print_error(message):
     """Print error message to the console."""
     click.echo(click.style(message, fg='red'), err=True)
+
+
+def total_duration(records: List[Record]) -> str:
+    total = datetime.timedelta()
+
+    for r in records:
+        total += r.duration
+
+    return ':'.join(str(total).split(':')[:2]) + 'h'
+
+
+def print_total(records: List[Record]):
+    total = datetime.timedelta()
+    for r in records:
+        total += r.duration
+    total = ':'.join(str(total).split(':')[:2])
+
+    click.echo(click.style('Total: ', fg='green', bold=True) + total + 'h')
 
 
 def print_table(rows, columns=None):
