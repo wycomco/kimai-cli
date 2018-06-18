@@ -381,13 +381,15 @@ def add_record(start_time, end_time, last_entry_id, duration, favorite, project_
     if not comment:
         comment = click.edit('# Please enter a description of your activity')
 
-    kimai.add_record(
+    result = kimai.add_record(
         start_time,
         end_time,
         project_id,
         task_id,
         comment=comment
     )
+
+    print_success(str(result.items[0]['id']))
 
 
 @record.command('edit')
