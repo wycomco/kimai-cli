@@ -577,6 +577,27 @@ def yesterday():
     print_total(records)
 
 
+@timesheet.command('list')
+@click.option('--start-date', '-s', prompt='Start date', type=str)
+@click.option('--end-date', '-e', type=str)
+def list_timesheet(start_date, end_date):
+    start_date = dates.parse(start_date)
+    records = kimai.get_timesheet(
+        start_date=start_date,
+        end_date=dates.parse(end_date)
+    )
+
+    grouped_by_day = itertools.groupby(
+        records, lambda r: r.start.strftime('%A, %d %b %Y'))
+
+    for day, groups in grouped_by_day:
+        click.echo(click.style(day, bold=True))
+        records = list(groups)
+        print_records(records)
+        print_total(records)
+        click.echo()
+
+
 class FuzzyCompleter(Completer):
     def __init__(self, projects):
         self.projects = projects
