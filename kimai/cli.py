@@ -79,7 +79,8 @@ def print_records(records):
             record.comment
         ]
 
-    headers = ['Id', 'Start Time', 'End Time', 'Duration', 'Customer', 'Project', 'Task', 'Comment']
+    headers = ['Id', 'Start Time', 'End Time', 'Duration',
+               'Customer', 'Project', 'Task', 'Comment']
     rows = [extract_record_row(r) for r in records]
 
     table = tabulate.tabulate(rows, headers, tablefmt="grid")
@@ -98,7 +99,8 @@ def prompt_with_autocomplete(prompt_title, collection_name, resolve_title=True):
     title = None
 
     while title not in cached_collection:
-        title = prompt(prompt_title, completer=FuzzyCompleter(cached_collection.keys()))
+        title = prompt(prompt_title, completer=FuzzyCompleter(
+            cached_collection.keys()))
 
     if resolve_title:
         return cached_collection[title]
@@ -150,7 +152,8 @@ def stop(ctx):
 @click.pass_context
 def start(ctx, task_id, project_id, favorite, comment):
     """Start a new record"""
-    ctx.invoke(start_record, task_id=task_id, project_id=project_id, favorite=favorite, comment=comment)
+    ctx.invoke(start_record, task_id=task_id, project_id=project_id,
+               favorite=favorite, comment=comment)
 
 
 @cli.command('comment')
@@ -273,7 +276,8 @@ def record(ctx):
 def start_record(task_id, project_id, favorite, comment):
     """Start a new time recording"""
     if not favorite and not (project_id and task_id):
-        favorite = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
+        favorite = prompt_with_autocomplete(
+            'Favorite: ', 'Favorites', resolve_title=False)
 
     if favorite:
         try:
@@ -338,10 +342,12 @@ def add_record(start_time, end_time, last_entry_id, duration, favorite, project_
         return
 
     if not favorite and not (project_id and task_id):
-        favorite = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
+        favorite = prompt_with_autocomplete(
+            'Favorite: ', 'Favorites', resolve_title=False)
 
     if not (last_entry_id or start_time):
-        print_error('Need either a start time or the id of the previous record.')
+        print_error(
+            'Need either a start time or the id of the previous record.')
         return
 
     # If the id of the last record was provided, we assume that the start time of
@@ -523,7 +529,8 @@ def add_favorite(project_id, task_id, name):
 def delete_favorite(name):
     """Deletes a favorite"""
     if not name:
-        name = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
+        name = prompt_with_autocomplete(
+            'Favorite: ', 'Favorites', resolve_title=False)
 
     fav.delete_favorite(name)
     print_success('Successfully removed favorite "%s"' % name)
@@ -535,7 +542,8 @@ def delete_favorite(name):
 @click.pass_context
 def start_recording_favorite(ctx, name, comment):
     if not name:
-        name = prompt_with_autocomplete('Favorite: ', 'Favorites', resolve_title=False)
+        name = prompt_with_autocomplete(
+            'Favorite: ', 'Favorites', resolve_title=False)
 
     try:
         favorite = fav.get_favorite(name)
