@@ -579,7 +579,7 @@ def yesterday():
 
 @timesheet.command('list')
 @click.option('--start-date', '-s', prompt='Start date', type=str)
-@click.option('--end-date', '-e', type=str)
+@click.option('--end-date', '-e', default="now", type=str)
 def list_timesheet(start_date, end_date):
     start_date = dates.parse(start_date)
     records = kimai.get_timesheet(
