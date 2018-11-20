@@ -577,7 +577,7 @@ def get_today():
 @timesheet.command()
 def yesterday():
     records = kimai.get_timesheet(
-        start_date=dates.parse('beginning of last week'),
+        start_date=dates.parse('yesterday at 00:00:00'),
         end_date=dates.parse('yesterday at 23:59:59')
     )
 
