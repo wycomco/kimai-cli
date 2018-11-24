@@ -620,32 +620,12 @@ def show_gaps(start_date, end_date):
         end_date=end_date
     )
 
-    grouped_by_day = itertools.groupby(
-        reversed(records),
-        lambda r: r.start.strftime('%A, %d %b %Y')
-    )
-
-    result = []
-
-    for day, entries in grouped_by_day:
-        entries = list(entries)
-        for index, entry in enumerate(entries):
-            try:
-                next_entry = entries[index + 1]
-            except IndexError:
-                break
-
-            gap = next_entry.start - entry.end
-
-            # If the time between entries is more than the threshold
-            # we remember them for later.
-            if gap > datetime.timedelta(seconds=5):
-                result.append([day, next_entry, entry, gap])
+    result = dates.find_gaps(records, datetime.timedelta(seconds=1))
 
     for r in result:
-        click.echo(click.style(r[0], bold=True))
-        print_records(r[1:3])
-        click.echo(click.style('Gap: ', fg='green', bold=True) + str(r[3]))
+        click.echo(click.style(r.day, bold=True))
+        print_records([r.entry, r.next_entry])
+        click.echo(click.style('Gap: ', fg='green', bold=True) + str(r.gap))
 
 
 class FuzzyCompleter(Completer):
